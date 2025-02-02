@@ -15,6 +15,14 @@ import { useAppContext } from "../../context/AppContext";
 const menuItems = [
   { name: "Trang tổng quan", icon: BarChart, href: "/admin" },
   {
+    name: "Quản lý banner",
+    icon: Package,
+    subItems: [
+      { name: "Danh sách banner", icon: List, href: "/admin/banner" },
+      { name: "Thêm banner", icon: Package, href: "/admin/add-banner" },
+    ],
+  },
+  {
     name: "Quản lý sản phẩm",
     icon: Package,
     subItems: [

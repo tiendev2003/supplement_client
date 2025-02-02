@@ -1,41 +1,50 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { ChevronRight, ChevronsUpDown, Filter, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { Fragment, useState } from "react";
-import { Link } from "react-router-dom";
-
-const posts = [
-  {
-    id: 1,
-    title: "First Post",
-    author: "John Doe",
-    date: "2023-10-01",
-    status: "Published",
-  },
-  {
-    id: 2,
-    title: "Second Post",
-    author: "Jane Smith",
-    date: "2023-10-02",
-    status: "Draft",
-  },
-  // ...more posts
-];
+import {
+  ChevronRight,
+  ChevronsUpDown,
+  Download,
+  Filter,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { deleteBlog, getBlogs } from "../../../features/blogs/blogSlice";
+import { getAllUsers } from "../../../features/user/userSlice";
 
 export default function PostList() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { blogs, loading, total, pages, } = useSelector(
+    (state) => state.blogPosts
+  );
+  const { users } = useSelector((state) => state.auth);
   const [selectedPosts, setSelectedPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const totalPages = Math.ceil(posts.length / 10);
+  const totalPages = pages;
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [authorFilter, setAuthorFilter] = useState("");
 
+  useEffect(() => {
+    dispatch(getBlogs({ page: currentPage, limit: 10 }));
+  }, [dispatch, currentPage]);
+  useEffect(() => {
+    dispatch(getAllUsers());
+  }, [dispatch]);
+
   const toggleSelectAll = () => {
-    if (selectedPosts.length === posts.length) {
+    if (selectedPosts.length === blogs.length) {
       setSelectedPosts([]);
     } else {
-      setSelectedPosts(posts.map((p) => p.id));
+      setSelectedPosts(blogs.map((p) => p.id));
     }
   };
 
@@ -49,6 +58,7 @@ export default function PostList() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    dispatch(getBlogs({ page, limit: 10 }));
   };
 
   const handleSort = (key) => {
@@ -59,7 +69,7 @@ export default function PostList() {
     setSortConfig({ key, direction });
   };
 
-  const sortedPosts = [...posts].sort((a, b) => {
+  const sortedPosts = [...blogs].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) {
       return sortConfig.direction === "asc" ? -1 : 1;
     }
@@ -70,10 +80,11 @@ export default function PostList() {
   });
 
   const filteredPosts = sortedPosts.filter((post) => {
+    console.log(authorFilter);
     return (
-      (!authorFilter || post.author === authorFilter) &&
+      (!authorFilter || post.authorName === authorFilter) &&
       (post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.author.toLowerCase().includes(searchQuery.toLowerCase()))
+        post.authorName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   });
 
@@ -87,11 +98,51 @@ export default function PostList() {
     setPostToDelete(null);
   };
 
-  const confirmDelete = () => {
-    // Handle post deletion logic here
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteBlog(postToDelete.id)).unwrap();
+      // Optionally, show a success message
+    } catch (error) {
+      console.error(error);
+    } finally {
+      dispatch(getBlogs({ page: currentPage, limit: 10 }));
+    }
     closeDeleteDialog();
   };
 
+  const handleImport = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet);
+      console.log(json);
+      // Process the imported data as needed
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(blogs);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Posts");
+    XLSX.writeFile(workbook, "posts.xlsx");
+  };
+
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
   return (
     <div className="min-h-screen bg-white text-black p-8 dark:bg-[#081028] dark:text-white">
       <div className="max-w-7xl mx-auto">
@@ -108,9 +159,34 @@ export default function PostList() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
+              <button
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                type="button"
+                onClick={() => navigate("/admin/add-post")}
+              >
                 <Plus className="h-4 w-4" />
                 Add Post
+              </button>
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={() => document.getElementById("import-input").click()}
+              >
+                <Download className="h-4 w-4" />
+                Import
+              </button>
+              <input
+                type="file"
+                id="import-input"
+                accept=".xlsx, .xls"
+                style={{ display: "none" }}
+                onChange={handleImport}
+              />
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={handleExport}
+              >
+                <Upload className="h-4 w-4" />
+                Export
               </button>
             </div>
           </div>
@@ -134,8 +210,11 @@ export default function PostList() {
                 onChange={(e) => setAuthorFilter(e.target.value)}
               >
                 <option value="">All Authors</option>
-                <option value="John Doe">John Doe</option>
-                <option value="Jane Smith">Jane Smith</option>
+                {users.map((author) => (
+                  <option key={author.user_id} value={author.full_name}>
+                    {author.full_name}
+                  </option>
+                ))}
               </select>
               <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700">
                 <Filter className="h-4 w-4" />
@@ -155,7 +234,7 @@ export default function PostList() {
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                      checked={selectedPosts.length === posts.length}
+                      checked={selectedPosts.length === blogs.length}
                       onChange={toggleSelectAll}
                     />
                   </th>
@@ -199,50 +278,66 @@ export default function PostList() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPosts
-                  .slice((currentPage - 1) * 10, currentPage * 10)
-                  .map((post) => (
-                    <tr
-                      key={post.id}
-                      className="border-b border-gray-300 dark:border-gray-700"
-                    >
-                      <td className="px-6 py-4">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                          checked={selectedPosts.includes(post.id)}
-                          onChange={() => toggleSelect(post.id)}
-                        />
-                      </td>
-                      <td className="px-6 py-4">{post.title}</td>
-                      <td className="px-6 py-4">{post.author}</td>
-                      <td className="px-6 py-4">{post.date}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm ${
-                            post.status === "Published"
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-gray-500/20 text-gray-400"
-                          }`}
-                        >
-                          {post.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
-                            onClick={() => openDeleteDialog(post)}
+                {filteredPosts.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center">
+                      No data available
+                    </td>
+                  </tr>
+                ) : (
+                  filteredPosts
+                    .slice((currentPage - 1) * 10, currentPage * 10)
+                    .map((post) => (
+                      <tr
+                        key={post.post_id}
+                        className="border-b border-gray-300 dark:border-gray-700"
+                      >
+                        <td className="px-6 py-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
+                            checked={selectedPosts.includes(post.id)}
+                            onChange={() => toggleSelect(post.id)}
+                          />
+                        </td>
+                        <td className="px-6 py-4">{post.title}</td>
+                        <td className="px-6 py-4">{post.authorName}</td>
+                        <td className="px-6 py-4">
+                          {formatDate(post.createdAt)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm ${
+                              post.status === "published"
+                                ? "bg-green-500/20 text-green-500"
+                                : "bg-gray-500/20 text-gray-400"
+                            }`}
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {post.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
+                              type="button"
+                              onClick={() =>
+                                navigate(`/admin/edit-post/${post.post_id}`)
+                              }
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
+                              onClick={() => openDeleteDialog(post)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                )}
               </tbody>
             </table>
           </div>
@@ -250,8 +345,8 @@ export default function PostList() {
           {/* Pagination */}
           <div className="px-6 py-4 flex items-center justify-between border-t border-gray-300 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {currentPage * 10 - 9}-
-              {Math.min(currentPage * 10, posts.length)} of {posts.length}
+              {currentPage * 10 - 9}-{Math.min(currentPage * 10, total)} of{" "}
+              {total}
             </div>
             <div className="flex items-center gap-2">
               <button

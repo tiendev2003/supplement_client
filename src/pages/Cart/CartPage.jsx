@@ -1,112 +1,205 @@
-import { Button } from '@headlessui/react';
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Button } from "@headlessui/react";
+import React, { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import CartItems from "../../components/cart/CartItem";
 import CartProgress from "../../components/cart/CartProgress";
 import CartSummary from "../../components/cart/CartSummary";
 import CheckoutForm from "../../components/cart/CheckoutForm";
 import CouponForm from "../../components/cart/CouponForm";
 import OrderSummary from "../../components/cart/OrderSummary";
+import GlobalLoading from "../../components/GlobalLoading/GlobalLoading";
+
+import axiosInstance from "../../api/axiosConfig";
+import {
+  getCart,
+  removeFromCart,
+  updateCart,
+} from "../../features/cart/cartSlice";
+import { addOrder } from "../../features/orders/orderSlice";
+import formatDate from "../../utils/formatDate";
+import formatCurrency from "../../utils/formatMoney";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Tray Table",
-      color: "Black",
-      price: 19.0,
-      quantity: 2,
-      image: "/placeholder.svg",
-    },
-    {
-      id: 2,
-      name: "Tray Table",
-      color: "Red",
-      price: 19.0,
-      quantity: 2,
-      image: "/placeholder.svg",
-    },
-    {
-      id: 3,
-      name: "Table lamp",
-      color: "Gold",
-      price: 39.0,
-      quantity: 1,
-      image: "/placeholder.svg",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
+  const { cartItems, loadingCart } = useSelector((state) => state.cart);
+  const { loading } = useSelector((state) => state.orders);
+
+  useEffect(() => {
+    if (userInfo) {
+      dispatch(getCart());
+    }
+  }, [dispatch, userInfo]);
+
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    const stepQuery = parseInt(query.get("step"), 10);
+
+    // Validate step parameter
+    if (![1, 2, 3].includes(stepQuery)) {
+      const newStep = 1;
+      setStep(newStep);
+      query.set("step", newStep);
+      navigate({ search: query.toString() }, { replace: true });
+      return;
+    }
+
+    if (loadingCart) return; // Wait for cart data to load
+
+    // Handle steps 2 and 3 access validation
+    if (stepQuery === 2 || stepQuery === 3) {
+      if (!userInfo) {
+        // toast.error("Please login to proceed");
+        setStep(1);
+        query.set("step", 1);
+        navigate({ search: query.toString() }, { replace: true });
+        return;
+      }
+
+      // Additional check for step 2
+      if (stepQuery === 2 && cartItems.length === 0) {
+        toast.error("Your cart is empty");
+        setStep(1);
+        query.set("step", 1);
+        navigate({ search: query.toString() }, { replace: true });
+        return;
+      }
+    }
+
+    setStep(stepQuery);
+  }, [cartItems.length, loadingCart, location.search, navigate, userInfo]);
 
   const [shippingMethod, setShippingMethod] = useState("free");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
   const [step, setStep] = useState(1);
 
-  const updateQuantity = (id, newQuantity) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
-      )
-    );
+  const updateQuantity = async (id, newQuantity) => {
+    try {
+      await dispatch(updateCart({ id, quantity: newQuantity })).unwrap();
+      await dispatch(getCart()).unwrap();
+      toast.success("Quantity updated");
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error("Please login to update quantity");
+        return;
+      }
+      toast.error(error.message || "Error updating quantity");
+    }
   };
 
-  const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  const removeItem = async (id) => {
+    try {
+      await dispatch(removeFromCart(id)).unwrap();
+      toast.success("Item removed from cart");
+    } catch (error) {
+      toast.error(error.message || "Error removing item");
+    }
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  const subtotal = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cartItems]
   );
 
-  const shippingCosts = {
-    free: 0,
-    express: 15.0,
-    pickup: 21.0,
+  const shippingCosts = useMemo(
+    () => ({
+      free: 0,
+      express: 15000.0,
+      pickup: 21000.0,
+    }),
+    []
+  );
+
+  const total = useMemo(
+    () => subtotal + shippingCosts[shippingMethod],
+    [subtotal, shippingMethod, shippingCosts]
+  );
+
+  const handleSubmit = async (formData) => {
+    try {
+      let orderData = {};
+      dispatch(
+        addOrder({
+          ...formData,
+          shipping: shippingCosts[shippingMethod],
+        })
+      )
+        .then(async (data) => {
+          console.log(data);
+          orderData = data.payload.data;
+          setPaymentMethod(formData.paymentMethod);
+          if (formData.paymentMethod === "cod") {
+            toast.success("Order submitted successfully");
+            setStep(3);
+          }
+          if (formData.paymentMethod === "credit-card") {
+            toast.success("Redirecting to payment gateway");
+            setTimeout(() => {
+              setStep(3);
+            }, 3000);
+          }
+          if (formData.paymentMethod === "momo") {
+            const response = await axiosInstance.post(
+              "/orders/payment-with-momo",
+              {
+                total: Number(total) + Number(shippingCosts[shippingMethod]),
+                orderId: orderData.order_id,
+              }
+            );
+            window.location.href = response.data;
+            setStep(3);
+            setTimeout(() => {
+              setStep(3);
+            }, 3000);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          toast.error(error.message || "Error submitting order");
+        });
+
+    } catch (error) {
+      toast.error(error.message || "Error submitting order");
+    }
   };
 
-  const total = subtotal + shippingCosts[shippingMethod];
-  const handleSubmit = async (formData) => {
-    // Handle form submission
-    console.log("Form submitted:", formData);
-    // Redirect to confirmation page
-    setStep(3);
+  const setStepWithQuery = (newStep) => {
+    if (newStep === 2 && (!userInfo || cartItems.length === 0)) {
+      toast.error("Please login and ensure your cart is not empty to proceed.");
+      return;
+    }
+    setStep(newStep);
+    const query = new URLSearchParams(location.search);
+    query.set("step", newStep);
+    navigate({ search: query.toString() });
   };
-  const orderDetails = {
-    orderCode: "#0123_45678",
-    date: "October 19, 2023",
-    total: 1345.0,
-    paymentMethod: "Credit Card",
-    items: [
-      {
-        id: 1,
-        name: "Tray Table",
-        color: "Black",
-        quantity: 2,
-        image: "/placeholder.svg",
-      },
-      {
-        id: 2,
-        name: "Tray Table",
-        color: "Red",
-        quantity: 2,
-        image: "/placeholder.svg",
-      },
-      {
-        id: 3,
-        name: "Table lamp",
-        color: "Gold",
-        quantity: 1,
-        image: "/placeholder.svg",
-      },
-    ],
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStepWithQuery(step - 1);
+    }
   };
+
+  const steps = [
+    { number: 1, label: "Shopping cart" },
+    { number: 2, label: "Checkout details" },
+    { number: 3, label: "Order complete" },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+      {loading && <GlobalLoading />}
       <div className="mx-auto max-w-7xl">
         <h1 className="mb-6 text-center text-2xl font-bold sm:mb-8 sm:text-3xl">
           Cart
         </h1>
 
-        <CartProgress currentStep={step} />
+        <CartProgress currentStep={step} steps={steps} />
         {step === 1 && (
           <div className="mt-6 space-y-6 sm:mt-8 lg:grid lg:grid-cols-12 lg:gap-8 lg:space-y-0">
             <div className="lg:col-span-8">
@@ -127,7 +220,7 @@ const CartPage = () => {
                 total={total}
                 shippingMethod={shippingMethod}
                 onShippingChange={setShippingMethod}
-                onClick={() => setStep(2)}
+                onClick={() => setStepWithQuery(2)}
               />
             </div>
           </div>
@@ -140,9 +233,19 @@ const CartPage = () => {
                 <CheckoutForm onSubmit={handleSubmit} />
               </div>
               <div className="lg:col-span-5">
-                <OrderSummary items={cartItems} />
+                <OrderSummary
+                  items={cartItems}
+                  shippingMethod={shippingMethod}
+                  shippingCost={shippingCosts[shippingMethod]}
+                />
               </div>
             </div>
+            <button
+              onClick={handleBack}
+              className="mt-4 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+            >
+              Back
+            </button>
           </>
         )}
 
@@ -156,54 +259,32 @@ const CartPage = () => {
                 Your order has been received
               </p>
 
-              {/* Order Items */}
-              <div className="mb-8 flex justify-center gap-4">
-                {orderDetails.items.map((item) => (
-                  <div key={item.id} className="relative">
-                    <div className="relative h-20 w-20 overflow-hidden rounded-lg border bg-gray-100 sm:h-24 sm:w-24">
-                      <img
-                        src={item.image || "/placeholder.svg"}
-                        alt={item.name}
-                         className="object-cover"
-                      />
-                    </div>
-                    <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-medium text-white">
-                      {item.quantity}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Order Details */}
               <div className="mx-auto mb-8 max-w-sm space-y-3 text-sm sm:text-base">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Order code:</span>
-                  <span className="font-medium">{orderDetails.orderCode}</span>
+                  <span className="text-gray-600 text-start">Order code:</span>
+                  <span className="font-medium text-end">{uuidv4()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">{orderDetails.date}</span>
+                  <span className="font-medium">{formatDate(Date.now())}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total:</span>
-                  <span className="font-medium">
-                    ${orderDetails.total.toFixed(2)}
-                  </span>
+                  <span className="font-medium">{formatCurrency(total)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Payment method:</span>
                   <span className="font-medium">
-                    {orderDetails.paymentMethod}
+                    {paymentMethod.toUpperCase()}
                   </span>
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="space-y-4 sm:space-x-4 sm:space-y-0">
-                <Button   className="w-full sm:w-auto" >
-                  <Link to="/purchase-history">Purchase history</Link>
-                </Button>
-                <Button className="w-full sm:w-auto" >
+                <button className=" py-1.5 px-3 bg-slate-400 text-white font-semibold rounded-2xl shadow-lg hover:from-purple-500 hover:to-blue-500 transition-all duration-300 transform hover:scale-105 active:scale-95">
+                  <Link to="/account/orders">Purchase history</Link>
+                </button>
+                <Button className="inline-flex items-center gap-2 rounded-2xl bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
                   <Link to="/shop">Continue Shopping</Link>
                 </Button>
               </div>

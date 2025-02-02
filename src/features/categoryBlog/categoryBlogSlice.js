@@ -3,9 +3,10 @@ import axiosInstance from "../../api/axiosConfig";
 
 export const getCategoryBlogs = createAsyncThunk(
   "categoryBlog/getCategoryBlogs",
-  async (_, { rejectWithValue }) => {
+  async ({ page, limit }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/category-blogs");
+      const response = await axiosInstance.get(`/category-blogs?page=${page}&limit=${limit}`);
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -61,11 +62,14 @@ export const deleteCategoryBlog = createAsyncThunk(
   }
 );
 
+
 const initialState = {
   categoryBlogs: [],
   loading: false,
   error: null,
   success: false,
+  total: 0,
+  pages: 0,
 };
 
 const categoryBlogSlice = createSlice({
@@ -82,15 +86,20 @@ const categoryBlogSlice = createSlice({
     builder.addCase(getCategoryBlogs.pending, (state) => {
       state.loading = true;
       state.error = null;
+      state.success = false;
     });
     builder.addCase(getCategoryBlogs.fulfilled, (state, { payload }) => {
       state.loading = false;
-      state.categoryBlogs = payload;
+      console.log(payload);
+      state.categoryBlogs = payload.data;
       state.error = null;
+      state.total = payload.total;
+      state.pages = payload.pages;
     });
     builder.addCase(getCategoryBlogs.rejected, (state, { payload }) => {
       state.loading = false;
       state.error = payload;
+      
     });
     builder.addCase(addCategoryBlog.pending, (state) => {
       state.loading = true;
@@ -115,7 +124,7 @@ const categoryBlogSlice = createSlice({
       state.success = true;
       state.error = null;
       state.categoryBlogs = state.categoryBlogs.map((categoryBlog) =>
-        categoryBlog.id === payload.id ? payload : categoryBlog
+        categoryBlog.category_id === payload.category_id ? payload : categoryBlog
       );
     });
     builder.addCase(updateCategoryBlog.rejected, (state, { payload }) => {
@@ -131,7 +140,7 @@ const categoryBlogSlice = createSlice({
       state.error = null;
       state.success = true;
       state.categoryBlogs = state.categoryBlogs.filter(
-        (categoryBlog) => categoryBlog.id !== payload
+        (categoryBlog) => categoryBlog.category_id !== payload
       );
     });
     builder.addCase(deleteCategoryBlog.rejected, (state, { payload }) => {

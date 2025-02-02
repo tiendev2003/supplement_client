@@ -1,156 +1,106 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { getAddresses } from "../../features/address/addressSlice";
 
 export default function CheckoutForm({ onSubmit }) {
-  const [paymentMethod, setPaymentMethod] = useState("credit-card")
+  const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm()
+  } = useForm();
+  const dispatch = useDispatch();
+  const { addresses } = useSelector((state) => state.address);
+  const { cartItems } = useSelector((state) => state.cart);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(getAddresses());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const defaultAddress = addresses.find((address) => address.is_default);
+    if (defaultAddress) {
+      for (const [key, value] of Object.entries(defaultAddress)) {
+        setValue(key, value);
+      }
+    }
+  }, [addresses, setValue]);
+
+  const defaultAddress = addresses.find((address) => address.is_default);
+
+  const handleFormSubmit = (data) => {
+    if(!defaultAddress) {
+       toast.error("Please add an address to continue");
+      return;
+    }
+    const orderDetails = {
+      address_id: defaultAddress.address_id,
+      items: cartItems.map((item) => ({
+        name: item.product.name,
+        price: (item.product.price * (100 - item.product.discount)) / 100,
+        quantity: item.quantity,
+        product_id: item.product.product_id,
+        images: item.product.images,
+      })),
+      paymentMethod,
+    };
+    onSubmit(orderDetails);
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Contact Information */}
-      <div className="rounded-lg bg-white p-6">
-        <h2 className="text-lg font-medium">Contact Information</h2>
-        <div className="mt-4 grid gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                First Name
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                {...register("firstName", { required: "First name is required" })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                {...register("lastName", { required: "Last name is required" })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>}
-            </div>
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      {/* Default Address */}
+      {defaultAddress ? (
+        <div className="rounded-lg bg-white p-6 border border-gray-200">
+          <h2 className="text-lg font-medium">Default Address</h2>
+          <div className="mt-4 space-y-2">
+            <p className="text-sm font-medium text-gray-900">
+              {defaultAddress.full_name}
+            </p>
+            <p className="text-sm text-gray-500">{defaultAddress.phone}</p>
+            <p className="text-sm text-gray-500">
+              {defaultAddress.address_line1},{" "}
+              {defaultAddress.address_line2 &&
+                `${defaultAddress.address_line2}, `}
+              {defaultAddress.city}, {defaultAddress.state},{" "}
+              {defaultAddress.country}, {defaultAddress.postal_code}
+            </p>
           </div>
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              {...register("phone", { required: "Phone number is required" })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address",
-                },
-              })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-          </div>
-        </div>
-      </div>
-
-      {/* Shipping Address */}
-      <div className="rounded-lg bg-white p-6">
-        <h2 className="text-lg font-medium">Shipping Address</h2>
-        <div className="mt-4 grid gap-4">
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-              Street Address
-            </label>
-            <input
-              type="text"
-              id="address"
-              {...register("address", { required: "Address is required" })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700">
-              Country
-            </label>
-            <select
-              id="country"
-              {...register("country", { required: "Country is required" })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() =>
+                navigate("/account/address", { state: { fromCheckout: true } })
+              }
+              className="inline-flex items-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-900"
             >
-              <option value="">Select a country</option>
-              <option value="US">United States</option>
-              <option value="CA">Canada</option>
-              <option value="GB">United Kingdom</option>
-            </select>
-            {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-              Town / City
-            </label>
-            <input
-              type="text"
-              id="city"
-              {...register("city", { required: "City is required" })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>}
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                State
-              </label>
-              <input
-                type="text"
-                id="state"
-                {...register("state", { required: "State is required" })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                ZIP Code
-              </label>
-              <input
-                type="text"
-                id="zipCode"
-                {...register("zipCode", { required: "ZIP code is required" })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.zipCode && <p className="mt-1 text-sm text-red-600">{errors.zipCode.message}</p>}
-            </div>
+              Select a Different Address
+            </button>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-lg bg-white p-6 border border-gray-200">
+          <h2 className="text-lg font-medium">No Address Found</h2>
+          <div className="mt-4">
+            <Link
+              to="/account/address/add"
+              className="inline-flex items-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-900"
+            >
+              Add New Address
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Payment Method */}
-      <div className="rounded-lg bg-white p-6">
+      <div className="rounded-lg bg-white p-6 border border-gray-200">
         <h2 className="text-lg font-medium">Payment Method</h2>
         <div className="mt-4 space-y-4">
           <div className="flex items-center gap-4">
@@ -163,64 +113,56 @@ export default function CheckoutForm({ onSubmit }) {
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="h-4 w-4 border-gray-300 text-black focus:ring-black"
             />
-            <label htmlFor="credit-card" className="text-sm font-medium text-gray-700">
-              Pay by Card Credit
+            <label
+              htmlFor="credit-card"
+              className="text-sm font-medium text-gray-700"
+            >
+              Thanh toán với ngân hàng
             </label>
           </div>
           <div className="flex items-center gap-4">
             <input
               type="radio"
-              id="paypal"
+              id="momo"
               name="paymentMethod"
-              value="paypal"
-              checked={paymentMethod === "paypal"}
+              value="momo"
+              checked={paymentMethod === "momo"}
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="h-4 w-4 border-gray-300 text-black focus:ring-black"
             />
-            <label htmlFor="paypal" className="text-sm font-medium text-gray-700">
-              PayPal
+            <label htmlFor="momo" className="text-sm font-medium text-gray-700">
+              MoMo
+            </label>
+          </div>
+          <div className="flex items-center gap-4">
+            <input
+              type="radio"
+              id="cod"
+              name="paymentMethod"
+              value="cod"
+              checked={paymentMethod === "cod"}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="h-4 w-4 border-gray-300 text-black focus:ring-black"
+            />
+            <label htmlFor="cod" className="text-sm font-medium text-gray-700">
+              Cash on Delivery
             </label>
           </div>
 
           {paymentMethod === "credit-card" && (
             <div className="mt-4 space-y-4">
               <div>
-                <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">
-                  Card Number
+                <label
+                  htmlFor="qrCode"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Scan QR Code
                 </label>
-                <input
-                  type="text"
-                  id="cardNumber"
-                  {...register("cardNumber", { required: "Card number is required" })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                <img
+                  src="/path/to/qr-code.png"
+                  alt="QR Code"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                 />
-                {errors.cardNumber && <p className="mt-1 text-sm text-red-600">{errors.cardNumber.message}</p>}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="expiry" className="block text-sm font-medium text-gray-700">
-                    MM/YY
-                  </label>
-                  <input
-                    type="text"
-                    id="expiry"
-                    {...register("expiry", { required: "Expiry date is required" })}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                  {errors.expiry && <p className="mt-1 text-sm text-red-600">{errors.expiry.message}</p>}
-                </div>
-                <div>
-                  <label htmlFor="cvc" className="block text-sm font-medium text-gray-700">
-                    CVC Code
-                  </label>
-                  <input
-                    type="text"
-                    id="cvc"
-                    {...register("cvc", { required: "CVC is required" })}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                  {errors.cvc && <p className="mt-1 text-sm text-red-600">{errors.cvc.message}</p>}
-                </div>
               </div>
             </div>
           )}
@@ -234,6 +176,5 @@ export default function CheckoutForm({ onSubmit }) {
         Place Order
       </button>
     </form>
-  )
+  );
 }
-

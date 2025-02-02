@@ -1,58 +1,101 @@
 import { PlusIcon, XIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { addCategoryBlog, updateCategoryBlog } from "../../../features/categoryBlog/categoryBlogSlice";
+import { fetchCategoryProductById } from "../../../features/categoryProduct/categoryProductSlice";
 
 export default function AddPostCategory() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const { id } = useParams();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchCategoryProductById(id)).then((response) => {
+        const category = response.payload;
+        for (const [key, value] of Object.entries(category)) {
+          setValue(key, value);
+        }
+      });
+    }
+  }, [id, dispatch, setValue]);
+
+  const onSubmit = async (data) => {
+    try {
+      if (id) {
+        await dispatch(updateCategoryBlog({ id, ...data })).unwrap();
+        toast.success("Category updated successfully");
+      } else {
+        await dispatch(addCategoryBlog(data)).unwrap();
+        toast.success("Category added successfully");
+      }
+      navigate(-1);
+    } catch (error) {
+      toast.error(error.message ?? error.error);
+      console.error("Failed to save category: ", error);
+    }
   };
 
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white text-black dark:bg-gray-900 dark:text-white">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">Add New Category</h2>
+        <h2 className="text-2xl font-semibold">{id ? "Edit Category" : "Add New Category"}</h2>
         <div className="flex gap-2">
-          <button
+          <Link
+            to="/admin/categories"
             className="bg-gray-700 px-4 text-white py-2 rounded-lg flex items-center gap-2"
-            onClick={() => window.history.back()}
           >
             <XIcon size={16} /> Cancel
-          </button>
+          </Link>
           <button
             type="submit"
             className="bg-indigo-600 px-4 text-white py-2 rounded-lg flex items-center gap-2"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSubmit)}
           >
-            <PlusIcon size={16} /> Add Category
+            <PlusIcon size={16} /> {id ? "Update Category" : "Add Category"}
           </button>
         </div>
       </div>
       <div className="p-4 rounded-lg bg-gray-200 text-black dark:bg-gray-800 dark:text-white">
         <h3 className="text-lg font-semibold">General Information</h3>
-        <label className="block mt-4">
-          <span className="text-sm text-gray-400">Category Name</span>
-          <input
-            type="text"
-            className="w-full p-2 border rounded-lg mt-1 border-gray-400 bg-white text-black dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="Type category name here..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </label>
-        <label className="block mt-4">
-          <span className="text-sm text-gray-400">Description</span>
-          <textarea
-            className="w-full p-2 border rounded-lg mt-1 border-gray-400 bg-white text-black dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="Type category description here..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <label className="block mt-4">
+            <span className="text-sm text-gray-400">Category Name</span>
+            <input
+              type="text"
+              className="w-full p-2 border rounded-lg mt-1 border-gray-400 bg-white text-black dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              placeholder="Type category name here..."
+              {...register("name", { required: true })}
+            />
+            {errors.name && (
+              <span className="text-red-500 text-sm">
+                This field is required
+              </span>
+            )}
+          </label>
+          <label className="block mt-4">
+            <span className="text-sm text-gray-400">Description</span>
+            <textarea
+              className="w-full p-2 border rounded-lg mt-1 border-gray-400 bg-white text-black dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              placeholder="Type category description here..."
+              {...register("description", { required: true })}
+            />
+            {errors.description && (
+              <span className="text-red-500 text-sm">
+                This field is required
+              </span>
+            )}
+          </label>
+        </form>
       </div>
     </div>
   );

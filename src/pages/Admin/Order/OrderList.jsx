@@ -2,49 +2,55 @@ import { Dialog, Transition } from "@headlessui/react";
 import {
   ChevronRight,
   ChevronsUpDown,
+  Download,
   Filter,
   Pencil,
   Plus,
   Search,
-  Trash2
+  Trash2,
+  Upload,
 } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-
-const orders = [
-  {
-    id: 1,
-    customer: "John Doe",
-    date: "2023-10-01",
-    total: 100,
-    status: "Pending",
-  },
-  {
-    id: 2,
-    customer: "Jane Smith",
-    date: "2023-10-02",
-    total: 200,
-    status: "Completed",
-  },
-  // ...more orders
-];
+import * as XLSX from "xlsx";
+import {
+  deleteOrder,
+  getAllOrdersByAdmin,
+  updateOrder,
+} from "../../../features/orders/orderSlice";
+import formatDate from "../../../utils/formatDate";
+import formatCurrency from "../../../utils/formatMoney";
 
 export default function OrderList() {
+  const dispatch = useDispatch();
+  const {
+    ordersByAdmin = [],
+    loading,
+    total,
+    pages,
+  } = useSelector((state) => state.orders);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const totalPages = Math.ceil(orders.length / 10);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const limit = 10;
+
+  useEffect(() => {
+    dispatch(getAllOrdersByAdmin({ page: currentPage, limit }));
+  }, [dispatch, currentPage]);
 
   const toggleSelectAll = () => {
-    if (selectedOrders.length === orders.length) {
+    if (selectedOrders.length === ordersByAdmin.length) {
       setSelectedOrders([]);
     } else {
-      setSelectedOrders(orders.map((o) => o.id));
+      setSelectedOrders(ordersByAdmin.map((o) => o.order_id));
     }
   };
 
@@ -68,7 +74,7 @@ export default function OrderList() {
     setSortConfig({ key, direction });
   };
 
-  const sortedOrders = [...orders].sort((a, b) => {
+  const sortedOrders = [...ordersByAdmin].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) {
       return sortConfig.direction === "asc" ? -1 : 1;
     }
@@ -82,8 +88,8 @@ export default function OrderList() {
     return (
       (!dateFilter || order.date === dateFilter) &&
       (!statusFilter || order.status === statusFilter) &&
-      (order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.id.toString().includes(searchQuery))
+      (order.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.order_id.toString().includes(searchQuery))
     );
   });
 
@@ -97,9 +103,48 @@ export default function OrderList() {
     setOrderToDelete(null);
   };
 
-  const confirmDelete = () => {
-    // Handle order deletion logic here
+  const confirmDelete = async () => {
+    try {
+      await dispatch(deleteOrder(orderToDelete.order_id)).unwrap();
+      toast.success("Order deleted successfully");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      await dispatch(getAllOrdersByAdmin()).unwrap();
+    }
     closeDeleteDialog();
+  };
+
+  const handleImport = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet);
+      console.log(json);
+      // Process the imported data as needed
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(ordersByAdmin);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+    XLSX.writeFile(workbook, "orders.xlsx");
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await dispatch(updateOrder({ id: orderId, status: newStatus })).unwrap();
+      toast.success("Order status updated successfully");
+      dispatch(getAllOrdersByAdmin({ page: currentPage, limit }));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -118,6 +163,27 @@ export default function OrderList() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={() => document.getElementById("import-input").click()}
+              >
+                <Download className="h-4 w-4" />
+                Import
+              </button>
+              <input
+                type="file"
+                id="import-input"
+                accept=".xlsx, .xls"
+                style={{ display: "none" }}
+                onChange={handleImport}
+              />
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={handleExport}
+              >
+                <Upload className="h-4 w-4" />
+                Export
+              </button>
               <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
                 <Plus className="h-4 w-4" />
                 Add Order
@@ -172,41 +238,35 @@ export default function OrderList() {
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                      checked={selectedOrders.length === orders.length}
+                      checked={selectedOrders.length === ordersByAdmin.length}
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th
-                    className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("customer")}
-                  >
+                  <th className="px-6 py-4 text-left cursor-pointer" onClick={() => handleSort("customer")}>
                     <div className="flex items-center gap-2">
                       Customer
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
-                  <th
-                    className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("date")}
-                  >
+                  <th className="px-6 py-4 text-left cursor-pointer" onClick={() => handleSort("productName")}>
                     <div className="flex items-center gap-2">
-                      Date
+                      Product Name
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
-                  <th
-                    className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("total")}
-                  >
+                  <th className="px-6 py-4 text-left cursor-pointer" onClick={() => handleSort("total")}>
                     <div className="flex items-center gap-2">
                       Total
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
-                  <th
-                    className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("status")}
-                  >
+                  <th className="px-6 py-4 text-left cursor-pointer" onClick={() => handleSort("date")}>
+                    <div className="flex items-center gap-2">
+                      Date
+                      <ChevronsUpDown className="w-4 h-4" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left cursor-pointer" onClick={() => handleSort("status")}>
                     <div className="flex items-center gap-2">
                       Status
                       <ChevronsUpDown className="w-4 h-4" />
@@ -216,52 +276,46 @@ export default function OrderList() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders
-                  .slice((currentPage - 1) * 10, currentPage * 10)
-                  .map((order) => (
-                    <tr
-                      key={order.id}
-                      className="border-b border-gray-300 dark:border-gray-700"
-                    >
-                      <td className="px-6 py-4">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                          checked={selectedOrders.includes(order.id)}
-                          onChange={() => toggleSelect(order.id)}
-                        />
-                      </td>
-                      <td className="px-6 py-4">{order.customer}</td>
-                      <td className="px-6 py-4">{order.date}</td>
-                      <td className="px-6 py-4">${order.total}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm ${
-                            order.status === "Completed"
-                              ? "bg-green-500/20 text-green-500"
-                              : order.status === "Pending"
-                              ? "bg-yellow-500/20 text-yellow-500"
-                              : "bg-red-500/20 text-red-500"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
-                            onClick={() => openDeleteDialog(order)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                {filteredOrders.slice((currentPage - 1) * 10, currentPage * 10).map((order) => (
+                  <tr key={order.order_id} className="border-b border-gray-300 dark:border-gray-700">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
+                        checked={selectedOrders.includes(order.order_id)}
+                        onChange={() => toggleSelect(order.order_id)}
+                      />
+                    </td>
+                    <td className="px-6 py-4">{order.user.full_name}</td>
+                    <td className="px-6 py-4">{order.items[0].product.name}</td>
+                    <td className="px-6 py-4">{formatCurrency(order.total)}</td>
+                    <td className="px-6 py-4">{formatDate(order.created_at)}</td>
+                    <td className="px-6 py-4">
+                      <select
+                        className="rounded-lg border border-gray-300 bg-white py-1 px-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-[#081028] dark:text-white dark:border-gray-600"
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order.order_id, e.target.value)}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button 
+                        type="button"
+                        className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700" onClick={() => openDeleteDialog(order)}>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -270,7 +324,8 @@ export default function OrderList() {
           <div className="px-6 py-4 flex items-center justify-between border-t border-gray-300 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {currentPage * 10 - 9}-
-              {Math.min(currentPage * 10, orders.length)} of {orders.length}
+              {Math.min(currentPage * 10, ordersByAdmin.length)} of{" "}
+              {ordersByAdmin.length}
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -280,7 +335,7 @@ export default function OrderList() {
               >
                 Previous
               </button>
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(pages)].map((_, index) => (
                 <button
                   key={index}
                   className={`px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 ${
@@ -296,7 +351,7 @@ export default function OrderList() {
               <button
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === pages}
               >
                 Next
               </button>

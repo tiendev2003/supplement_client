@@ -48,7 +48,7 @@ export const updateCategoryProduct = createAsyncThunk(
       console.log(data);
       const response = await axiosInstance.put(
         `/category-products/${data.id}`,
-        data,
+        data.formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
       return response.data;

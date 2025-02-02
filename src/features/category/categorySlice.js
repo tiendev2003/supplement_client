@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axiosInstance from "../../.api/axiosConfig";
-
+import axiosInstance from "../../api/axiosConfig";
+ 
 export const getCategories = createAsyncThunk(
   "category/getCategories",
   async (_, { rejectWithValue }) => {
@@ -41,7 +41,7 @@ export const updateCategory = createAsyncThunk(
   "category/updateCategory",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/categories/${data.id}`, data);
+      const response = await axiosInstance.put(`/categories/${data.id}`, data.formData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

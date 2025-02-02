@@ -1,8 +1,11 @@
- 
-export default function OrderSummary({ items }) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = 0 // Free shipping
-  const total = subtotal + shipping
+import formatCurrency from "../../utils/formatMoney";
+
+export default function OrderSummary({ items, shippingMethod, shippingCost }) {
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const total = subtotal + shippingCost;
 
   return (
     <div className="rounded-lg bg-white p-6">
@@ -10,20 +13,32 @@ export default function OrderSummary({ items }) {
 
       <div className="mt-6 divide-y">
         {items.map((item) => (
-          <div key={item.id} className="flex gap-4 py-4">
+          <div key={item.cart_item_id} className="flex gap-4 py-4">
             <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-              <img src={item.image || "/placeholder.svg"} alt={item.name}   className="object-cover" />
+              <img
+                src={
+                  import.meta.env.VITE_API_URL +
+                    "/" +
+                    item.product.images[0].url || "/placeholder.svg"
+                }
+                crossOrigin="anonymous"
+                alt={item.name}
+                className="object-contain w-full h-full"
+              />
             </div>
             <div className="flex flex-1 flex-col justify-between">
               <div>
-                <h3 className="font-medium">{item.name}</h3>
-                <p className="mt-1 text-sm text-gray-500">Color: {item.color}</p>
+                <h3 className="font-medium">{item.product.name}</h3>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center rounded-lg border px-2 py-1">
                   <span className="text-sm">Qty: {item.quantity}</span>
                 </div>
-                <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-medium">
+                  {formatCurrency(
+                    (item.product.price * (100 - item.product.discount)) / 100
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -33,15 +48,15 @@ export default function OrderSummary({ items }) {
       <div className="mt-6 space-y-4">
         <div className="flex justify-between text-sm">
           <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>{formatCurrency(subtotal)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span>Shipping</span>
-          <span>Free</span>
+          <span>Shipping ({shippingMethod})</span>
+          <span>{formatCurrency(shippingCost)}</span>
         </div>
         <div className="flex justify-between border-t pt-4 text-base font-semibold">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatCurrency(total)}</span>
         </div>
       </div>
 
@@ -59,6 +74,5 @@ export default function OrderSummary({ items }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

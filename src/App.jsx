@@ -7,6 +7,8 @@ import LayoutProfile from "./layouts/profile";
 import AccountPage from "./pages/Account/AccountPage";
 import AddAddressPage from "./pages/Address/AddAddressPage";
 import AddressPage from "./pages/Address/AddressPage";
+import AddBanner from "./pages/Admin/Banner/AddBanner";
+import BannerList from "./pages/Admin/Banner/BannerList";
 import AddCategoryPage from "./pages/Admin/category/AddCategory";
 import CategoryListPage from "./pages/Admin/category/CategoryList";
 import AddContactPage from "./pages/Admin/contact/AddContact";
@@ -24,11 +26,14 @@ import ForgotPasswordPage from "./pages/Authentication/ForgotPasswordPage";
 import OtpVerificationPage from "./pages/Authentication/OtpVerificationPage";
 import SignInPage from "./pages/Authentication/SignInPage";
 import SignUpPage from "./pages/Authentication/SignUpPage";
+import SingleBlogPage from "./pages/Blog/SingleBlogPage";
 import ContactPage from "./pages/Contact/ContactPage";
 import NotFoundPage from "./pages/Error/NotFoundPage";
 import DetailOrderPage from "./pages/myorder/DetailOrderPage";
 import MyOrderPage from "./pages/myorder/MyOrderPage";
+import SettingPage from "./pages/Setting/SettingPage";
 import SingleProductPage from "./pages/Shop/SingleProductPage";
+import ProtectedRoute from "./routing/ProtectedRoute";
 
 const BlogPage = lazy(() => import("./pages/Blog/BlogPage"));
 const CartPage = lazy(() => import("./pages/Cart/CartPage"));
@@ -45,18 +50,23 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:id" element={<SingleBlogPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/shop" element={<ShopPage />} />
-            <Route path="/shop/:id" element={<SingleProductPage />} />
+            <Route path="/shop/:slug" element={<SingleProductPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/account" element={<LayoutProfile />}>
-              <Route path="" element={<AccountPage />} />
-              <Route path="address" element={<AddressPage />} />
-              <Route path="address/add" element={<AddAddressPage />} />
-              <Route path="address/edit/:id" element={<AddAddressPage />} />
-              <Route path="orders" element={<MyOrderPage />} />
-              <Route path="orders/:id" element={<DetailOrderPage />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/account" element={<LayoutProfile />}>
+                <Route path="" element={<AccountPage />} />
+                <Route path="address" element={<AddressPage />} />
+                <Route path="setting" element={<SettingPage />} />
+                <Route path="address/add" element={<AddAddressPage />} />
+                <Route path="address/edit/:id" element={<AddAddressPage />} />
+                <Route path="orders" element={<MyOrderPage />} />
+                <Route path="orders/:id" element={<DetailOrderPage />} />
+              </Route>
             </Route>
           </Route>
           <Route path="/signup" element={<SignUpPage />} />
@@ -65,8 +75,12 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/admin" element={<LayoutAdmin />}>
             <Route path="" element={<DashboardPage />} />
+            <Route path="banner" element={<BannerList />} />
+            <Route path="add-banner" element={<AddBanner />} />
+            <Route path="edit-banner/:id" element={<AddBanner />} />
             <Route path="product-list" element={<ProductListPage />} />
             <Route path="add-product" element={<AddProductPage />} />
+            <Route path="edit-product/:id" element={<AddProductPage />} />
             <Route path="category-list" element={<CategoryListPage />} />
             <Route path="add-category" element={<AddCategoryPage />} />
             <Route path="edit-category/:id" element={<AddCategoryPage />} />
@@ -74,6 +88,7 @@ function App() {
             <Route path="post-category-list" element={<PostCategoryList />} />
             <Route path="add-post-category" element={<AddPostCategory />} />
             <Route path="add-post" element={<AddPostPage />} />
+            <Route path="edit-post/:id" element={<AddPostPage />} />
             <Route path="contact-list" element={<ContactListPage />} />
             <Route path="add-contact" element={<AddContactPage />} />
             <Route path="order-list" element={<OrderListPage />} />

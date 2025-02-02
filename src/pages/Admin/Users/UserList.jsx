@@ -189,9 +189,9 @@ export default function UserListPage() {
               <tbody>
                 {filteredUsers
                   .slice((currentPage - 1) * 10, currentPage * 10)
-                  .map((user) => (
+                  .map((user,index) => (
                     <tr
-                      key={user.id}
+                      key={index}
                       className="border-b border-gray-300 dark:border-gray-700"
                     >
                       <td className="px-6 py-4">

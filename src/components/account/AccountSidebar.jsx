@@ -1,45 +1,48 @@
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { Home, LogOut, MapPin, ShoppingBag } from "lucide-react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Home, LogOut, MapPin, Settings, ShoppingBag } from "lucide-react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { clearCartState } from "../../features/cart/cartSlice";
 import { logout, userLogout } from "../../features/user/userSlice";
 
-export default function AccountSidebar({ user }) {
-  let [isOpen, setIsOpen] = useState(false)
+export default function AccountSidebar() {
+  let [isOpen, setIsOpen] = useState(false);
   function open() {
-    setIsOpen(true)
+    setIsOpen(true);
   }
 
   function close() {
-    setIsOpen(false)
+    setIsOpen(false);
   }
   const navigation = [
     { name: "Account", href: "/account", icon: Home },
     { name: "Address", href: "/account/address", icon: MapPin },
     { name: "Orders", href: "/account/orders", icon: ShoppingBag },
+    { name: "Cài đặt", href: "/account/setting", icon: Settings },
   ];
+  const {userInfo} = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const onLogout = async () => {
-    
     try {
       await dispatch(userLogout()).unwrap();
-        dispatch(logout())
-      navigate("/");
+        dispatch(clearCartState());
+      dispatch(logout());
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Failed to logout: ", error);
     }
   };
 
   return (
-    <aside className="rounded-lg bg-white p-6 shadow-sm">
+    <aside className="rounded-lg bg-white p-6 shadow-sm md:col-span-3">
       <div className="mb-6 flex flex-col items-center">
         <div className="relative mb-3 h-20 w-20 overflow-hidden rounded-full">
           <img src={"/user.jpg"} alt="" className="object-cover" />
         </div>
-        <h2 className="text-lg font-semibold">{user.displayName}</h2>
+        <h2 className="text-lg font-semibold">{userInfo.full_name}</h2>
       </div>
 
       <nav>
@@ -73,16 +76,23 @@ export default function AccountSidebar({ user }) {
         </ul>
       </nav>
       <Dialog open={isOpen} as="div" className="relative z-10" onClose={close}>
-        <div className="fixed inset-0 bg-black bg-opacity-30 transition-opacity" aria-hidden="true"></div>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 transition-opacity"
+          aria-hidden="true"
+        ></div>
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-              <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900">
+              <DialogTitle
+                as="h3"
+                className="text-lg font-medium leading-6 text-gray-900"
+              >
                 Confirm Logout
               </DialogTitle>
               <div className="mt-2">
                 <p className="text-sm text-gray-500">
-                  Are you sure you want to log out? You will need to log in again to access your account.
+                  Are you sure you want to log out? You will need to log in
+                  again to access your account.
                 </p>
               </div>
               <div className="mt-4 flex justify-end space-x-2">

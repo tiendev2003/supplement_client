@@ -1,6 +1,7 @@
 import { useLottie } from "lottie-react";
 import React from "react";
 import groovyWalkAnimation from "./loading.json";
+
 const GlobalLoading = () => {
   const options = {
     animationData: groovyWalkAnimation,

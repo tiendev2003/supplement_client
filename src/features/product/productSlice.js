@@ -29,7 +29,25 @@ export const addProduct = createAsyncThunk(
   "product/addProduct",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/products", data);
+      console.log(data);
+      const response = await axiosInstance.post("/products", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const fetchProductBySlug = createAsyncThunk(
+  "product/fetchProductBySlug",
+  async (slug, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/products/slug/${slug}`);
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -41,7 +59,15 @@ export const updateProduct = createAsyncThunk(
   "product/updateProduct",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/products/${data.id}`, data);
+      const response = await axiosInstance.put(
+        `/products/${data.id}`,
+        data.formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -61,11 +87,30 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
+export const filterProducts = createAsyncThunk(
+  "product/filterProducts",
+  async ({ category, priceRange }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/products", {
+        params: { category, priceRange },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const initialState = {
   products: [],
+  product: {},
+  relatedProducts: [],
+  totalRating: 0,
   loading: false,
   error: null,
   success: false,
+  total: 0,
+  pages: 0,
 };
 
 const productSlice = createSlice({
@@ -85,43 +130,16 @@ const productSlice = createSlice({
     });
     builder.addCase(getProducts.fulfilled, (state, { payload }) => {
       state.loading = false;
-      state.products = payload;
+      state.products = payload.data;
       state.error = null;
+      state.total = payload.total;
+      state.pages = payload.pages;
     });
     builder.addCase(getProducts.rejected, (state, { payload }) => {
       state.loading = false;
       state.error = payload;
     });
-    builder.addCase(addProduct.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(addProduct.fulfilled, (state, { payload }) => {
-      state.loading = false;
-      state.error = null;
-      state.success = true;
-      state.products.push(payload);
-    });
-    builder.addCase(addProduct.rejected, (state, { payload }) => {
-      state.loading = false;
-      state.error = payload;
-    });
-    builder.addCase(updateProduct.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(updateProduct.fulfilled, (state, { payload }) => {
-      state.loading = false;
-      state.success = true;
-      state.error = null;
-      state.products = state.products.map((product) =>
-        product.id === payload.id ? payload : product
-      );
-    });
-    builder.addCase(updateProduct.rejected, (state, { payload }) => {
-      state.loading = false;
-      state.error = payload;
-    });
+  
     builder.addCase(deleteProduct.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -131,13 +149,44 @@ const productSlice = createSlice({
       state.error = null;
       state.success = true;
       state.products = state.products.filter(
-        (product) => product.id !== payload
+        (product) => product.product_id !== payload
       );
     });
     builder.addCase(deleteProduct.rejected, (state, { payload }) => {
       state.loading = false;
       state.error = payload;
     });
+    builder.addCase(filterProducts.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(filterProducts.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.products = payload.data;
+      state.error = null;
+      state.total = payload.total;
+      state.pages = payload.pages;
+    });
+    builder
+      .addCase(filterProducts.rejected, (state, { payload }) => {
+        state.loading = false;
+        state.error = payload;
+      })
+      .addCase(fetchProductBySlug.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProductBySlug.fulfilled, (state, { payload }) => {
+        state.loading = false;
+        state.product = payload.product;
+        state.relatedProducts = payload.relatedProducts;
+        state.totalRating = payload.totalRating;
+        state.error = null;
+      })
+      .addCase(fetchProductBySlug.rejected, (state, { payload }) => {
+        state.loading = false;
+        state.error = payload;
+      });
   },
 });
 

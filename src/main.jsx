@@ -1,3 +1,4 @@
+import "rc-slider/assets/index.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
@@ -13,7 +14,7 @@ createRoot(document.getElementById("root")).render(
     <AppProvider>
       <Provider store={store}>
         <App />
-        <Toaster />
+        <Toaster position="top-right" />
       </Provider>
     </AppProvider>
   </StrictMode>

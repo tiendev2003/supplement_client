@@ -6,6 +6,7 @@ export const getOrders = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/orders");
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -41,7 +42,24 @@ export const updateOrder = createAsyncThunk(
   "order/updateOrder",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/orders/${data.id}`, data);
+      console.log(data);
+      const response = await axiosInstance.put(
+        `/orders/admin/${data.id}`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+export const getAllOrdersByAdmin = createAsyncThunk(
+  "order/getAllOrdersByAdmin",
+  async ({ page, limit }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/orders/admin/all`, {
+        params: { page, limit },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -63,9 +81,13 @@ export const deleteOrder = createAsyncThunk(
 
 const initialState = {
   orders: [],
+  order: {},
   loading: false,
   error: null,
   success: false,
+  ordersByAdmin: [],
+  total: 0,
+  pages: 0,
 };
 
 const orderSlice = createSlice({
@@ -85,7 +107,9 @@ const orderSlice = createSlice({
     });
     builder.addCase(getOrders.fulfilled, (state, { payload }) => {
       state.loading = false;
-      state.orders = payload;
+      state.orders = payload.data;
+      state.total = payload.total;
+      state.pages = payload.pages;
       state.error = null;
     });
     builder.addCase(getOrders.rejected, (state, { payload }) => {
@@ -130,11 +154,37 @@ const orderSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = true;
-      state.orders = state.orders.filter(
-        (order) => order.order_id !== payload
-      );
+      state.orders = state.orders.filter((order) => order.order_id !== payload);
     });
     builder.addCase(deleteOrder.rejected, (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+    });
+    builder.addCase(getAllOrdersByAdmin.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getAllOrdersByAdmin.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.ordersByAdmin = payload.data;
+      state.total = payload.total;
+      state.pages = payload.pages;
+      state.error = null;
+    });
+    builder.addCase(getAllOrdersByAdmin.rejected, (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+    });
+    builder.addCase(fetchOrderById.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchOrderById.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.order = payload;
+      state.error = null;
+    });
+    builder.addCase(fetchOrderById.rejected, (state, { payload }) => {
       state.loading = false;
       state.error = payload;
     });

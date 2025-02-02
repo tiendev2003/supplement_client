@@ -1,15 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
 import AccountSidebar from "../components/account/AccountSidebar";
 
 const LayoutProfile = () => {
-  const [user, setUser] = useState({
-    firstName: "Sofia",
-    lastName: "Havertz",
-    displayName: "Sofia Havertz",
-    email: "sofia@example.com",
-    avatar: "/placeholder.svg",
-  });
   return (
     <div className="min-h-screen bg-[#e7ecef] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
@@ -17,11 +10,11 @@ const LayoutProfile = () => {
           My Account
         </h1>
 
-        <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-          <AccountSidebar user={user} />
-          <main>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+          <AccountSidebar />
+          <div className="md:col-span-9">
             <Outlet />
-          </main>
+          </div>
         </div>
       </div>
     </div>

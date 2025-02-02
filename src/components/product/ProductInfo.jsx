@@ -1,4 +1,5 @@
 import React from "react";
+import formatCurrency from "../../utils/formatMoney";
 
 const ProductInfo = ({ product, view }) => {
   return (
@@ -6,10 +7,12 @@ const ProductInfo = ({ product, view }) => {
       <RatingStars rating={product.rating} />
       <h3 className="text-sm font-medium">{product.name}</h3>
       <div className="flex items-center gap-2">
-        <p className="font-semibold">${product.price.toFixed(2)}</p>
-        {product.originalPrice && (
+        <p className="font-semibold">
+          {formatCurrency((product.price * (100 - product.discount)) / 100)}
+        </p>
+        {product.discount && (
           <p className="text-sm text-gray-500 line-through">
-            ${product.originalPrice.toFixed(2)}
+            ${formatCurrency(product.price)}
           </p>
         )}
       </div>

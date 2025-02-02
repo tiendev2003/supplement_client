@@ -1,10 +1,4 @@
-export default function CartProgress({ currentStep }) {
-  const steps = [
-    { number: 1, label: "Shopping cart" },
-    { number: 2, label: "Checkout details" },
-    { number: 3, label: "Order complete" },
-  ];
-
+export default function CartProgress({ currentStep, steps }) {
   return (
     <div className="relative flex justify-between px-4 sm:px-0">
       {/* Progress Line */}

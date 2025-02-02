@@ -2,16 +2,6 @@ import { Dialog, Transition } from "@headlessui/react"
 import { X } from "lucide-react"
 import { Fragment } from "react"
 
-const categories = [
-  { name: "All Rooms", count: 123 },
-  { name: "Living Room", count: 45 },
-  { name: "Bedroom", count: 32 },
-  { name: "Kitchen", count: 27 },
-  { name: "Bathroom", count: 18 },
-  { name: "Dinning", count: 16 },
-  { name: "Outdoor", count: 14 },
-]
-
 const priceRanges = [
   { label: "All Price", value: "all" },
   { label: "$0.00 - $99.99", value: "0-99.99" },
@@ -21,25 +11,35 @@ const priceRanges = [
   { label: "$400.00+", value: "400-plus" },
 ]
 
- 
+export function FilterSidebar({ isOpen, onClose, categories, loading, onCategoryChange, onPriceRangeChange }) {
+  const handleCategoryChange = (category) => {
+    onCategoryChange(category)
+  }
 
-export function FilterSidebar({ isOpen, onClose }) {
+  const handlePriceRangeChange = (priceRange) => {
+    onPriceRangeChange(priceRange)
+  }
+
   const FilterContent = () => (
     <div className="flex flex-col gap-6">
       {/* Categories */}
       <div>
         <h3 className="mb-4 font-semibold uppercase">Categories</h3>
-        <ul className="space-y-2">
-          {categories.map((category) => (
-            <li key={category.name}>
-              <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300" />
-                <span className="flex-1">{category.name}</span>
-                <span className="text-sm text-gray-500">({category.count})</span>
-              </label>
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <ul className="space-y-2">
+            {categories.map((category) => (
+              <li key={category.slug}>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input type="radio" name="category" className="rounded border-gray-300" onChange={() => handleCategoryChange(category.slug)} />
+                  <span className="flex-1">{category.name}</span>
+                  <span className="text-sm text-gray-500">({category.products.length})</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Price Range */}
@@ -49,7 +49,7 @@ export function FilterSidebar({ isOpen, onClose }) {
           {priceRanges.map((range) => (
             <li key={range.value}>
               <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" name="price" value={range.value} className="rounded border-gray-300" />
+                <input type="radio" name="price" value={range.value} className="rounded border-gray-300" onChange={() => handlePriceRangeChange(range.value)} />
                 <span>{range.label}</span>
               </label>
             </li>

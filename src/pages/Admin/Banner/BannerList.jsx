@@ -1,48 +1,50 @@
 import { Dialog, Transition } from "@headlessui/react";
 import {
-  ChevronRight,
-  ChevronsUpDown,
-  Filter,
-  Search,
-  Trash2
+    ChevronRight,
+    ChevronsUpDown,
+    Download,
+    Pencil,
+    Plus,
+    Search,
+    Trash2,
+    Upload,
 } from "lucide-react";
-import { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import {
-  deleteContact,
-  getContacts,
-} from "../../../features/contact/contactSlice";
+import { Link, useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { deleteBanner, getBanners } from "../../../features/banner/bannerSlice";
 
-export default function ContactList() {
-  const [selectedContacts, setSelectedContacts] = useState([]);
+export default function BannerList() {
+  const dispatch = useDispatch();
+  const { banners, loading } = useSelector((state) => state.banners);
+  const [selectedBanners, setSelectedBanners] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const totalPages = Math.ceil(banners.length / 10);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [contactToDelete, setContactToDelete] = useState(null);
-
-  const dispatch = useDispatch();
-  const { contacts, loading, error } = useSelector((state) => state.contact);
-  const totalPages = Math.ceil(contacts.length / 10);
+  const [bannerToDelete, setBannerToDelete] = useState(null);
 
   useEffect(() => {
-    dispatch(getContacts());
+    dispatch(getBanners());
   }, [dispatch]);
-
-  const toggleSelectAll = () => {
-    if (selectedContacts.length === contacts.length) {
-      setSelectedContacts([]);
+   const toggleSelectAll = () => {
+    if (selectedBanners.length === banners.length) {
+      setSelectedBanners([]);
     } else {
-      setSelectedContacts(contacts.map((c) => c.id));
+      setSelectedBanners(banners.map((b) => b.id));
     }
   };
 
+  const navigate = useNavigate();
+
   const toggleSelect = (id) => {
-    if (selectedContacts.includes(id)) {
-      setSelectedContacts(selectedContacts.filter((c) => c !== id));
+    if (selectedBanners.includes(id)) {
+      setSelectedBanners(selectedBanners.filter((b) => b !== id));
     } else {
-      setSelectedContacts([...selectedContacts, id]);
+      setSelectedBanners([...selectedBanners, id]);
     }
   };
 
@@ -58,7 +60,7 @@ export default function ContactList() {
     setSortConfig({ key, direction });
   };
 
-  const sortedContacts = [...contacts].sort((a, b) => {
+  const sortedBanners = [...banners].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) {
       return sortConfig.direction === "asc" ? -1 : 1;
     }
@@ -68,36 +70,48 @@ export default function ContactList() {
     return 0;
   });
 
-  const filteredContacts = sortedContacts.filter((contact) => {
-    return (
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.message.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
-
-  const openDeleteDialog = (contact) => {
-    setContactToDelete(contact);
+  const openDeleteDialog = (banner) => {
+    setBannerToDelete(banner);
     setIsDeleteDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setIsDeleteDialogOpen(false);
-    setContactToDelete(null);
+    setBannerToDelete(null);
   };
 
   const confirmDelete = async () => {
     try {
-      await dispatch(deleteContact(contactToDelete.id)).unwrap();
-      closeDeleteDialog();
+      await dispatch(deleteBanner(bannerToDelete.banner_id)).unwrap();
+      toast.success("Banner deleted successfully");
     } catch (error) {
-      console.error("Failed to delete contact: ", error);
+      console.error(error);
+    } finally {
+      await dispatch(getBanners()).unwrap();
     }
+    closeDeleteDialog();
   };
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' , hour: 'numeric', minute: 'numeric', second: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  const handleImport = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet);
+      console.log(json);
+      // Process the imported data as needed
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(banners);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Banners");
+    XLSX.writeFile(workbook, "banners.xlsx");
   };
 
   return (
@@ -108,32 +122,56 @@ export default function ContactList() {
           {/* Top section */}
           <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-xl font-semibold">Contacts</h1>
+              <h1 className="text-xl font-semibold">Banner</h1>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Link to="/admin">Dashboard</Link>
                 <ChevronRight className="h-4 w-4" />
-                <span>Contact List</span>
+                <span>Banner List</span>
               </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={() => document.getElementById("import-input").click()}
+              >
+                <Download className="h-4 w-4" />
+                Import
+              </button>
+              <input
+                type="file"
+                id="import-input"
+                accept=".xlsx, .xls"
+                style={{ display: "none" }}
+                onChange={handleImport}
+              />
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+                onClick={handleExport}
+              >
+                <Upload className="h-4 w-4" />
+                Export
+              </button>
+              <button
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                onClick={() => navigate("/admin/add-banner")}
+              >
+                <Plus className="h-4 w-4" />
+                Add Banner
+              </button>
             </div>
           </div>
 
-          {/* Filters */}
+          {/* Search */}
           <div className="flex flex-col gap-4 border-t border-gray-300 p-4 md:flex-row md:items-center md:justify-between dark:border-gray-700">
             <div className="relative flex-1 md:max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600 dark:text-gray-400" />
               <input
                 type="search"
-                placeholder="Search contacts..."
+                placeholder="Search banner..."
                 className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-[#081028] dark:text-white dark:border-gray-600"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700">
-                <Filter className="h-4 w-4" />
-                Filters
-              </button>
             </div>
           </div>
         </div>
@@ -148,43 +186,25 @@ export default function ContactList() {
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                      checked={selectedContacts.length === contacts.length}
+                      checked={selectedBanners.length === banners.length}
                       onChange={toggleSelectAll}
                     />
                   </th>
                   <th
                     className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("name")}
+                    onClick={() => handleSort("title")}
                   >
                     <div className="flex items-center gap-2">
-                      Name
+                      Title
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
                   <th
                     className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("email")}
+                    onClick={() => handleSort("status")}
                   >
                     <div className="flex items-center gap-2">
-                      Email
-                      <ChevronsUpDown className="w-4 h-4" />
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("message")}
-                  >
-                    <div className="flex items-center gap-2">
-                      Message
-                      <ChevronsUpDown className="w-4 h-4" />
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-4 text-left cursor-pointer"
-                    onClick={() => handleSort("date")}
-                  >
-                    <div className="flex items-center gap-2">
-                      Date
+                      Status
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
@@ -192,30 +212,65 @@ export default function ContactList() {
                 </tr>
               </thead>
               <tbody>
-                {filteredContacts
+                {sortedBanners
+                  .filter((banner) =>
+                    banner.title
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase())
+                  )
                   .slice((currentPage - 1) * 10, currentPage * 10)
-                  .map((contact,index) => (
+                  .map((banner) => (
                     <tr
-                      key={index}
+                      key={banner.banner_id}
                       className="border-b border-gray-300 dark:border-gray-700"
                     >
                       <td className="px-6 py-4">
                         <input
                           type="checkbox"
                           className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                          checked={selectedContacts.includes(contact.id)}
-                          onChange={() => toggleSelect(contact.id)}
+                          checked={selectedBanners.includes(banner.banner_id)}
+                          onChange={() => toggleSelect(banner.banner_id)}
                         />
                       </td>
-                      <td className="px-6 py-4">{contact.name}</td>
-                      <td className="px-6 py-4">{contact.email}</td>
-                      <td className="px-6 py-4">{contact.message}</td>
-                      <td className="px-6 py-4">{formatDate(contact.createdAt)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={
+                              import.meta.env.VITE_API_URL +
+                                "/" +
+                                banner.image || "/placeholder.svg"
+                            }
+                            crossOrigin="anonymous"
+                            alt=""
+                            className="w-6 h-6 rounded-full"
+                          />
+                          {banner.title}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm ${
+                            banner.status === "active"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-gray-500/20 text-gray-400"
+                          }`}
+                        >
+                          {banner.status.toUpperCase()}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <button
                             className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
-                            onClick={() => openDeleteDialog(contact)}
+                            onClick={() =>
+                              navigate(`/admin/edit-banner/${banner.banner_id}`)
+                            }
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
+                            onClick={() => openDeleteDialog(banner)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -231,7 +286,7 @@ export default function ContactList() {
           <div className="px-6 py-4 flex items-center justify-between border-t border-gray-300 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {currentPage * 10 - 9}-
-              {Math.min(currentPage * 10, contacts.length)} of {contacts.length}
+              {Math.min(currentPage * 10, banners.length)} of {banners.length}
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -297,12 +352,12 @@ export default function ContactList() {
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
                   >
-                    Delete Contact
+                    Delete Banner
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Are you sure you want to delete the contact from "
-                      {contactToDelete?.name}"? This action cannot be undone.
+                      Are you sure you want to delete the banner "
+                      {bannerToDelete?.title}"? This action cannot be undone.
                     </p>
                   </div>
 

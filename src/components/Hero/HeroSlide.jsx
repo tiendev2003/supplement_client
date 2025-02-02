@@ -44,7 +44,7 @@ const HeroSlide = () => {
             <img
               src={slide.image || "/placeholder.svg"}
               alt={slide.alt}
-              className="object-cover"
+              className="object-cover w-full h-full"
               loading="lazy"
             />
           </div>

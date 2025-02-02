@@ -11,8 +11,9 @@ const ProductImage = ({ product, view }) => {
       }
     >
       <img
-        src={product.image || "/placeholder.svg"}
+        src={import.meta.env.VITE_API_URL +"/"+ product.images[0].url || "/placeholder.svg"}
         alt={product.name}
+        crossOrigin="anonymous"
         className="object-cover transition-transform duration-300 group-hover:scale-105"
       />
       {/* Badges */}

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function AccountDetails({ user, onSubmit, onPasswordChange }) {
-  console.log(user);
   const [formData, setFormData] = useState({
     full_name: user.full_name,
     email: user.email,
@@ -97,7 +96,7 @@ export default function AccountDetails({ user, onSubmit, onPasswordChange }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className=" lg:col-span-9 lg:mt-0">
       {/* Account Details Section */}
       <div className="rounded-lg bg-white p-6 shadow-sm">
         <form onSubmit={handleSubmit}>
@@ -267,7 +266,9 @@ export default function AccountDetails({ user, onSubmit, onPasswordChange }) {
                 </button>
               </div>
               {errors.newPassword && (
-                <p className="mt-1 text-sm text-red-500">{errors.newPassword}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.newPassword}
+                </p>
               )}
             </div>
 
@@ -286,7 +287,11 @@ export default function AccountDetails({ user, onSubmit, onPasswordChange }) {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className={`mt-1 block w-full rounded-md border px-3 py-2 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10
-                  ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
+                  ${
+                    errors.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                 />
                 <button
                   type="button"

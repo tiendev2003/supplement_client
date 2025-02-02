@@ -7,14 +7,15 @@ export default function BlogGrid({ posts, view }) {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
           <Link
-            key={post.id}
-            href={`/blog/${post.id}`}
+            key={post.post_id}
+            to={`/blog/${post.post_id}`}
             className="group overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md"
           >
             <div className="relative aspect-[4/3] overflow-hidden">
               <img
-                src={post.image || "/placeholder.svg"}
+                src={import.meta.env.VITE_API_URL + "/" + post.image || "/placeholder.svg"}
                 alt={post.title}
+                crossOrigin="anonymous"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
             </div>
@@ -45,7 +46,7 @@ export default function BlogGrid({ posts, view }) {
           </div>
           <div>
             <h2 className="text-lg font-semibold sm:text-xl">{post.title}</h2>
-            <p className="mt-2 text-sm text-gray-500">{post.date}</p>
+            <p className="mt-2 text-sm text-gray-500">{post.createdAt}</p>
           </div>
         </Link>
       ))}

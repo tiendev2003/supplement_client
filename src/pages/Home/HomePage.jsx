@@ -1,28 +1,13 @@
 import { Lock, PhoneCall, RefreshCw, Truck } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { CategoryCard } from "../../components/category/categoryCard";
 import { FeatureCard } from "../../components/feature/featureCard";
 import HeroSlide from "../../components/Hero/HeroSlide";
 import { ProductCard } from "../../components/product/productCard";
-import Chatbot from "../Chat/ChatBot";
-const categories = [
-  {
-    title: "Living Room",
-    image: "/placeholder.svg",
-    href: "/shop/living-room",
-  },
-  {
-    title: "Bedroom",
-    image: "/placeholder.svg",
-    href: "/shop/bedroom",
-  },
-  {
-    title: "Kitchen",
-    image: "/placeholder.svg",
-    href: "/shop/kitchen",
-  },
-];
+import { getCategoryProducts } from "../../features/categoryProduct/categoryProductSlice";
+import { getProducts } from "../../features/product/productSlice";
 
 const newArrivals = [
   {
@@ -88,6 +73,16 @@ const features = [
   },
 ];
 const HomePage = () => {
+  const dispatch = useDispatch();
+
+  const { categoryProducts } = useSelector((state) => state.categoryProducts);
+  const { products } = useSelector((state) => state.products);
+  useEffect(() => {
+    dispatch(getCategoryProducts());
+  }, [dispatch]);
+  useEffect(() => {
+    dispatch(getProducts());
+  }, [dispatch]);
   return (
     <>
       <HeroSlide />
@@ -108,12 +103,12 @@ const HomePage = () => {
       {/* Categories */}
       <section className="container py-16">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <CategoryCard key={category.title} {...category} />
+          {categoryProducts.map((category, index) => (
+            <CategoryCard key={index} {...category} />
           ))}
         </div>
       </section>
-   
+
       {/* New Arrivals */}
       <section className="container py-16">
         <div className="mb-8 flex items-center justify-between">
@@ -128,8 +123,8 @@ const HomePage = () => {
           </Link>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.name} {...product} />
+          {products.map((product, index) => (
+            <ProductCard key={index} {...product} />
           ))}
         </div>
       </section>

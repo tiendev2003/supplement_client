@@ -29,7 +29,12 @@ export const addBlog = createAsyncThunk(
   "blog/addBlog",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/blogs", data);
+      console.log(data);
+      const response = await axiosInstance.post("/blogs", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -41,7 +46,15 @@ export const updateBlog = createAsyncThunk(
   "blog/updateBlog",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/blogs/${data.id}`, data);
+      const response = await axiosInstance.put(
+        `/blogs/${data.id}`,
+        data.formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -60,12 +73,41 @@ export const deleteBlog = createAsyncThunk(
     }
   }
 );
+export const getAllTags = createAsyncThunk(
+  "blog/getAllTags",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/blogs/tags/all");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// recently added
+export const getBlogRecentlyAdded = createAsyncThunk(
+  "categoryBlog/getBlogRecentlyAdded",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/blogs/recent/all`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const initialState = {
   blogs: [],
+  blog: {},
+  tags: [],
   loading: false,
   error: null,
   success: false,
+  total: 0,
+  pages: 0,
+  blogRecentlyAdded: [],
 };
 
 const blogSlice = createSlice({
@@ -85,8 +127,10 @@ const blogSlice = createSlice({
     });
     builder.addCase(getBlogs.fulfilled, (state, { payload }) => {
       state.loading = false;
-      state.blogs = payload;
+      state.blogs = payload.data;
       state.error = null;
+      state.total = payload.total;
+      state.pages = payload.pages;
     });
     builder.addCase(getBlogs.rejected, (state, { payload }) => {
       state.loading = false;
@@ -115,7 +159,7 @@ const blogSlice = createSlice({
       state.success = true;
       state.error = null;
       state.blogs = state.blogs.map((blog) =>
-        blog.id === payload.id ? payload : blog
+        blog.id === payload.post_id ? payload : blog
       );
     });
     builder.addCase(updateBlog.rejected, (state, { payload }) => {
@@ -130,11 +174,49 @@ const blogSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = true;
-      state.blogs = state.blogs.filter(
-        (blog) => blog.id !== payload
-      );
+      state.blogs = state.blogs.filter((blog) => blog.post_id !== payload);
     });
     builder.addCase(deleteBlog.rejected, (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+    });
+    builder.addCase(fetchBlogById.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchBlogById.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.error = null;
+      state.success = true;
+      state.blog = payload;
+    });
+    builder.addCase(fetchBlogById.rejected, (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+    });
+    builder.addCase(getAllTags.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getAllTags.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.error = null;
+      state.tags = payload;
+    });
+    builder.addCase(getAllTags.rejected, (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+    });
+    builder.addCase(getBlogRecentlyAdded.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getBlogRecentlyAdded.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.error = null;
+      state.blogRecentlyAdded = payload;
+    });
+    builder.addCase(getBlogRecentlyAdded.rejected, (state, { payload }) => {
       state.loading = false;
       state.error = payload;
     });

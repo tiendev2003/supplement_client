@@ -1,133 +1,28 @@
 import { Dialog, Transition } from "@headlessui/react";
 import {
-  BatteryCharging,
   Calendar,
-  Camera,
   ChevronRight,
   ChevronsUpDown,
   Download,
   Filter,
-  Flashlight,
-  Flower,
-  Headphones,
-  Laptop,
   Pencil,
   Plus,
   Search,
-  Smartphone,
   Trash2,
-  Tv,
   Upload,
-  Watch,
-  Wifi,
 } from "lucide-react";
-import { Fragment, useState } from "react";
-import { Link } from "react-router-dom";
-
-const products = [
-  {
-    id: 1,
-    name: "Watch",
-    icon: <Watch className="w-4 h-4" />,
-    category: "Accessories",
-    price: 20,
-    company: "Google",
-    companyLogo: "/placeholder.svg",
-    status: "In Stock",
-  },
-  {
-    id: 2,
-    name: "Mobile",
-    icon: <Smartphone className="w-4 h-4" />,
-    category: "Telecommunication",
-    price: 500,
-    company: "Webflow",
-    companyLogo: "/placeholder.svg",
-    status: "Out of Stock",
-  },
-  {
-    id: 3,
-    name: "Laptop",
-    icon: <Laptop className="w-4 h-4" />,
-    category: "Note Book",
-    price: 600,
-    company: "Facebook",
-    companyLogo: "/placeholder.svg",
-    status: "Out of Stock",
-  },
-  {
-    id: 4,
-    name: "TV",
-    icon: <Tv className="w-4 h-4" />,
-    category: "Digital",
-    price: 250,
-    company: "Twitter",
-    companyLogo: "/placeholder.svg",
-    status: "In Stock",
-  },
-  {
-    id: 5,
-    name: "Camera",
-    icon: <Camera className="w-4 h-4" />,
-    category: "Digital",
-    price: 300,
-    company: "YouTube",
-    companyLogo: "/placeholder.svg",
-    status: "Out of Stock",
-  },
-  {
-    id: 6,
-    name: "Perfume",
-    icon: <Flower className="w-4 h-4" />,
-    category: "Cosmetics",
-    price: 25,
-    company: "Reddit",
-    companyLogo: "/placeholder.svg",
-    status: "In Stock",
-  },
-  {
-    id: 7,
-    name: "Ear pods",
-    icon: <Headphones className="w-4 h-4" />,
-    category: "Digital",
-    price: 45,
-    company: "Spotify",
-    companyLogo: "/placeholder.svg",
-    status: "Out of Stock",
-  },
-  {
-    id: 8,
-    name: "Wireless Charger",
-    icon: <BatteryCharging className="w-4 h-4" />,
-    category: "Digital",
-    price: 30,
-    company: "Pinterest",
-    companyLogo: "/placeholder.svg",
-    status: "In Stock",
-  },
-  {
-    id: 9,
-    name: "Torch",
-    icon: <Flashlight className="w-4 h-4" />,
-    category: "Light",
-    price: 20,
-    company: "Twitch",
-    companyLogo: "/placeholder.svg",
-    status: "Out of Stock",
-  },
-  {
-    id: 10,
-    name: "Access Point",
-    icon: <Wifi className="w-4 h-4" />,
-    category: "Network",
-    price: 35,
-    company: "LinkedIn",
-    companyLogo: "/placeholder.svg",
-    status: "Out of Stock",
-  },
-];
+import { Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  deleteProduct,
+  getProducts,
+} from "../../../features/product/productSlice";
 
 export default function ProductList() {
+  const dispatch = useDispatch();
+  const { products = [], loading } = useSelector((state) => state.products);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -135,6 +30,10 @@ export default function ProductList() {
   const totalPages = Math.ceil(products.length / 10);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(getProducts());
+  }, [dispatch]);
 
   const toggleSelectAll = () => {
     if (selectedProducts.length === products.length) {
@@ -184,9 +83,26 @@ export default function ProductList() {
     setProductToDelete(null);
   };
 
-  const confirmDelete = () => {
-    // Handle product deletion logic here
+  const confirmDelete = async () => {
+    try {
+      // Delete product
+      await dispatch(deleteProduct(productToDelete.product_id)).unwrap();
+      console.log("Product deleted successfully!");
+      toast.success("Product deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete product: " + error.message || error.error);
+    } finally {
+      dispatch(getProducts());
+    }
     closeDeleteDialog();
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
   };
 
   return (
@@ -213,9 +129,13 @@ export default function ProductList() {
                 <Upload className="h-4 w-4" />
                 Export
               </button>
-              <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
+              <button
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                type="button"
+                onClick={() => navigate("/admin/add-product")}
+              >
                 <Plus className="h-4 w-4" />
-                Add Category
+                Add Product
               </button>
             </div>
           </div>
@@ -289,7 +209,7 @@ export default function ProductList() {
                     onClick={() => handleSort("company")}
                   >
                     <div className="flex items-center gap-2">
-                      Company
+                      Ảnh
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
@@ -302,6 +222,15 @@ export default function ProductList() {
                       <ChevronsUpDown className="w-4 h-4" />
                     </div>
                   </th>
+                  <th
+                    className="px-6 py-4 text-left cursor-pointer"
+                    onClick={() => handleSort("createdAt")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Created At
+                      <ChevronsUpDown className="w-4 h-4" />
+                    </div>
+                  </th>
                   <th className="px-6 py-4"></th>
                 </tr>
               </thead>
@@ -310,7 +239,7 @@ export default function ProductList() {
                   .slice((currentPage - 1) * 10, currentPage * 10)
                   .map((product) => (
                     <tr
-                      key={product.id}
+                      key={product.product_id}
                       className="border-b border-gray-300 dark:border-gray-700"
                     >
                       <td className="px-6 py-4">
@@ -323,21 +252,25 @@ export default function ProductList() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-lg text-lg dark:bg-gray-700">
-                            {product.icon}
-                          </span>
                           {product.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
-                        {product.category}
+                        {product.categories[0].name}
                       </td>
-                      <td className="px-6 py-4">${product.price}</td>
+                      <td className="px-6 py-4">
+                        {formatCurrency(product.price)}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <img
-                            src={product.companyLogo || "/placeholder.svg"}
+                            src={
+                              import.meta.env.VITE_API_URL +
+                                "/" +
+                                product.images[0].url || "/placeholder.svg"
+                            }
                             alt=""
+                            crossOrigin="anonymous"
                             className="w-6 h-6 rounded-full"
                           />
                           {product.company}
@@ -346,17 +279,28 @@ export default function ProductList() {
                       <td className="px-6 py-4">
                         <span
                           className={`px-3 py-1 rounded-full text-sm ${
-                            product.status === "In Stock"
+                            product.stock_status === "in_stock"
                               ? "bg-green-500/20 text-green-500"
                               : "bg-gray-500/20 text-gray-400"
                           }`}
                         >
-                          {product.status}
+                          {product.stock_status.toUpperCase().replace("_", " ")}
                         </span>
                       </td>
                       <td className="px-6 py-4">
+                        {new Date(product.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <button className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700">
+                          <button
+                            className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
+                            type="button"
+                            onClick={() => {
+                              navigate(
+                                `/admin/edit-product/${product.product_id}`
+                              );
+                            }}
+                          >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button

@@ -46,8 +46,7 @@ axiosInstance.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 403 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/login")
+      !originalRequest._retry  
     ) {
       originalRequest._retry = true; // Mark the request as retried
       const refreshToken = localStorage.getItem("refreshToken"); // Get refreshToken

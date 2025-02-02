@@ -2,18 +2,19 @@ import { Link } from "react-router-dom";
 
  
  
-export function CategoryCard({ title, image, href }) {
+export function CategoryCard({ name, image, slug }) {
   return (
-    <Link to={href} className="group relative block overflow-hidden bg-gray-100 hover:bg-gray-50">
+    <Link to={`/shop?category=${slug}`} className="group relative block overflow-hidden bg-gray-100 hover:bg-gray-50">
       <div className="relative aspect-square md:aspect-[4/3]">
         <img
-          src={image || "/placeholder.svg"}
-          alt={title}
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          src={import.meta.env.VITE_API_URL +"/"+ image || "/placeholder.svg"}
+          alt={name}
+          crossOrigin="anonymous"
+          className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
         />
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <h3 className="text-lg font-semibold">{name}</h3>
         <p className="mt-1 flex items-center text-sm text-gray-600">
           Shop Now
           <svg
