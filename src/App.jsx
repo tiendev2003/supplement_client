@@ -17,17 +17,17 @@ const CategoryList = lazy(() =>
 );
 const ContactList = lazy(() => import("./pages/Admin/contact/ContactList"));
 const DashboardPage = lazy(() =>
-  import("./pages/Admin/dashboard/DashboardPage")
+  import("./pages/Admin/Dashboard/DashboardPage")
 );
-const OrderList = lazy(() => import("./pages/Admin/order/OrderList"));
-const AddPost = lazy(() => import("./pages/Admin/post/AddPost"));
+const OrderList = lazy(() => import("./pages/Admin/Order/OrderList"));
+const AddPost = lazy(() => import("./pages/Admin/Post/AddPost"));
 const AddPostCategory = lazy(() =>
   import("./pages/Admin/Post/AddPostCategory")
 );
 const PostCategoryList = lazy(() =>
   import("./pages/Admin/Post/PostCategoryList")
 );
-const PostList = lazy(() => import("./pages/Admin/post/PostList"));
+const PostList = lazy(() => import("./pages/Admin/Post/PostList"));
 const AddProduct = lazy(() => import("./pages/Admin/product/AddProduct"));
 const ProductList = lazy(() => import("./pages/Admin/product/ProductList"));
 const UserList = lazy(() => import("./pages/Admin/Users/UserList"));
