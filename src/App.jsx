@@ -13,9 +13,9 @@ const AddBanner = lazy(() => import("./pages/Admin/Banner/AddBanner"));
 const BannerList = lazy(() => import("./pages/Admin/Banner/BannerList"));
 
 const CategoryList = lazy(() =>
-  import("./pages/Admin/category/CategoryList")
+  import("./pages/Admin/Category/CategoryList")
 );
-const ContactList = lazy(() => import("./pages/Admin/contact/ContactList"));
+const ContactList = lazy(() => import("./pages/Admin/Contact/ContactList"));
 const DashboardPage = lazy(() =>
   import("./pages/Admin/Dashboard/DashboardPage")
 );
