@@ -104,7 +104,7 @@ const AddCategory = () => {
 
   const onSubmit = async (data) => {
     try {
-    setLoading(true);
+      setLoading(true);
       const { name, slug, image } = categoryData;
       const formData = new FormData();
       formData.append("name", name);
@@ -175,6 +175,7 @@ const AddCategory = () => {
                   />
                   <button
                     onClick={handleRemoveImage}
+                    type="button"
                     className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                   >
                     <XIcon size={16} />
@@ -184,6 +185,7 @@ const AddCategory = () => {
                 <div className="text-center p-4">
                   <p>Drag and drop image here, or click add image</p>
                   <button
+                    type="button"
                     className="mt-2 bg-indigo-500 text-white px-4 py-2 rounded-lg"
                     onClick={handleAddImageClick}
                   >
