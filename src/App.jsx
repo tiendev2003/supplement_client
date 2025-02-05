@@ -12,9 +12,7 @@ const AddressPage = lazy(() => import("./pages/Address/AddressPage"));
 const AddBanner = lazy(() => import("./pages/Admin/Banner/AddBanner"));
 const BannerList = lazy(() => import("./pages/Admin/Banner/BannerList"));
 
-const CategoryList = lazy(() =>
-  import("./pages/Admin/Category/CategoryList")
-);
+const CategoryList = lazy(() => import("./pages/Admin/Category/CategoryList"));
 const ContactList = lazy(() => import("./pages/Admin/Contact/ContactList"));
 const DashboardPage = lazy(() =>
   import("./pages/Admin/Dashboard/DashboardPage")
@@ -52,9 +50,7 @@ const CartPage = lazy(() => import("./pages/Cart/CartPage"));
 const CheckoutPage = lazy(() => import("./pages/Checkout/CheckoutPage"));
 const HomePage = lazy(() => import("./pages/Home/HomePage"));
 const ShopPage = lazy(() => import("./pages/Shop/ShopPage"));
-const AddCategory = lazy(() =>
-  import("./pages/Admin/category/AddCategory")
-);
+const AddCategory = lazy(() => import("./pages/Admin/Category/AddCategory"));
 
 function App() {
   return (
