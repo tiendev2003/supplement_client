@@ -53,7 +53,18 @@ const AddPost = () => {
           setTags(JSON.parse(blog.tags || "[]"));
           setImage(blog.image);
           setValue("categoryId", blog.category_id); // Set the selected category
-          editorRef.current.setContent(blog.content); // Set the content in the editor
+
+          // Check if the editor is initialized before setting its content
+          if (editorRef.current) {
+            editorRef.current.setContent(blog.content); // Set the content of the editor
+          } else {
+            const interval = setInterval(() => {
+              if (editorRef.current) {
+                editorRef.current.setContent(blog.content);
+                clearInterval(interval);
+              }
+            }, 100);
+          }
         })
         .catch((error) => {
           toast.error(
