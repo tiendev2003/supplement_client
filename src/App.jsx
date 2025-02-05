@@ -28,8 +28,8 @@ const PostCategoryList = lazy(() =>
   import("./pages/Admin/Post/PostCategoryList")
 );
 const PostList = lazy(() => import("./pages/Admin/Post/PostList"));
-const AddProduct = lazy(() => import("./pages/Admin/product/AddProduct"));
-const ProductList = lazy(() => import("./pages/Admin/product/ProductList"));
+const AddProduct = lazy(() => import("./pages/Admin/Product/AddProduct"));
+const ProductList = lazy(() => import("./pages/Admin/Product/ProductList"));
 const UserList = lazy(() => import("./pages/Admin/Users/UserList"));
 const ForgotPasswordPage = lazy(() =>
   import("./pages/Authentication/ForgotPasswordPage")
