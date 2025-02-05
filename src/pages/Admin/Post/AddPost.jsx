@@ -12,8 +12,8 @@ import {
 } from "../../../features/blogs/blogSlice";
 import { getCategoryBlogs } from "../../../features/categoryBlog/categoryBlogSlice";
 
-export default function AddPost() {
-  const {
+const AddPost = () => {
+   const {
     register,
     handleSubmit,
     control,
@@ -336,3 +336,5 @@ export default function AddPost() {
     </div>
   );
 }
+
+export default AddPost;

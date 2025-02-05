@@ -14,8 +14,8 @@ import {
   updateProduct,
 } from "../../../features/product/productSlice";
 
-export default function AddProduct() {
-  const {
+const AddProduct = () => {
+   const {
     register,
     handleSubmit,
     setValue,
@@ -416,3 +416,4 @@ export default function AddProduct() {
     </div>
   );
 }
+export default AddProduct;

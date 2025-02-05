@@ -1,13 +1,13 @@
 import { Dialog, Transition } from "@headlessui/react";
 import {
-    ChevronRight,
-    ChevronsUpDown,
-    Download,
-    Pencil,
-    Plus,
-    Search,
-    Trash2,
-    Upload,
+  ChevronRight,
+  ChevronsUpDown,
+  Download,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import React, { Fragment, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -16,7 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { deleteBanner, getBanners } from "../../../features/banner/bannerSlice";
 
-export default function BannerList() {
+const BannerList = () => {
   const dispatch = useDispatch();
   const { banners, loading } = useSelector((state) => state.banners);
   const [selectedBanners, setSelectedBanners] = useState([]);
@@ -30,7 +30,7 @@ export default function BannerList() {
   useEffect(() => {
     dispatch(getBanners());
   }, [dispatch]);
-   const toggleSelectAll = () => {
+  const toggleSelectAll = () => {
     if (selectedBanners.length === banners.length) {
       setSelectedBanners([]);
     } else {
@@ -385,4 +385,5 @@ export default function BannerList() {
       </Transition>
     </div>
   );
-}
+};
+export default BannerList;

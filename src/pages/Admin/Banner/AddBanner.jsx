@@ -4,14 +4,13 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-    addBanner,
-    fetchBannerById,
-    updateBanner,
-} from "../../../features/banner/bannerSlice";
 import GlobalLoading from "../../../components/GlobalLoading/GlobalLoading";
-
-export default function AddBanner() {
+import {
+  addBanner,
+  fetchBannerById,
+  updateBanner,
+} from "../../../features/banner/bannerSlice";
+const AddBanner = () => {
   const {
     register,
     handleSubmit,
@@ -223,4 +222,6 @@ export default function AddBanner() {
       </form>
     </div>
   );
-}
+};
+
+export default AddBanner;

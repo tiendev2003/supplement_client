@@ -1,41 +1,54 @@
 import React, { Suspense, lazy } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import GlobalLoading from "./components/GlobalLoading/GlobalLoading";
-import Layout from "./layouts";
-import LayoutAdmin from "./layouts/admin";
-import LayoutProfile from "./layouts/profile";
-import AccountPage from "./pages/Account/AccountPage";
-import AddAddressPage from "./pages/Address/AddAddressPage";
-import AddressPage from "./pages/Address/AddressPage";
-import AddBanner from "./pages/Admin/Banner/AddBanner";
-import BannerList from "./pages/Admin/Banner/BannerList";
-import AddCategoryPage from "./pages/Admin/category/AddCategory";
-import CategoryListPage from "./pages/Admin/category/CategoryList";
-import AddContactPage from "./pages/Admin/contact/AddContact";
-import ContactListPage from "./pages/Admin/contact/ContactList";
-import DashboardPage from "./pages/Admin/dashboard/DashboardPage";
-import OrderListPage from "./pages/Admin/order/OrderList";
-import AddPostPage from "./pages/Admin/post/AddPost";
-import AddPostCategory from "./pages/Admin/Post/AddPostCategory";
-import PostCategoryList from "./pages/Admin/Post/PostCategoryList";
-import PostListPage from "./pages/Admin/post/PostList";
-import AddProductPage from "./pages/Admin/product/AddProduct";
-import ProductListPage from "./pages/Admin/product/ProductList";
-import UserListPage from "./pages/Admin/Users/UserList";
-import ForgotPasswordPage from "./pages/Authentication/ForgotPasswordPage";
-import OtpVerificationPage from "./pages/Authentication/OtpVerificationPage";
-import SignInPage from "./pages/Authentication/SignInPage";
-import SignUpPage from "./pages/Authentication/SignUpPage";
-import SingleBlogPage from "./pages/Blog/SingleBlogPage";
-import ContactPage from "./pages/Contact/ContactPage";
-import NotFoundPage from "./pages/Error/NotFoundPage";
-import ImageSearchResult from "./pages/Image/ImageSearchResult";
-import DetailOrderPage from "./pages/myorder/DetailOrderPage";
-import MyOrderPage from "./pages/myorder/MyOrderPage";
-import SettingPage from "./pages/Setting/SettingPage";
-import SingleProductPage from "./pages/Shop/SingleProductPage";
 import ProtectedRoute from "./routing/ProtectedRoute";
 
+const Layout = lazy(() => import("./layouts"));
+const LayoutAdmin = lazy(() => import("./layouts/admin"));
+const LayoutProfile = lazy(() => import("./layouts/profile"));
+const AccountPage = lazy(() => import("./pages/Account/AccountPage"));
+const AddAddressPage = lazy(() => import("./pages/Address/AddAddressPage"));
+const AddressPage = lazy(() => import("./pages/Address/AddressPage"));
+const AddBanner = lazy(() => import("./pages/Admin/Banner/AddBanner"));
+const BannerList = lazy(() => import("./pages/Admin/Banner/BannerList"));
+const AddCategoryPage = lazy(() =>
+  import("./pages/Admin/category/AddCategory")
+);
+const CategoryListPage = lazy(() =>
+  import("./pages/Admin/category/CategoryList")
+);
+const ContactListPage = lazy(() => import("./pages/Admin/contact/ContactList"));
+const DashboardPage = lazy(() =>
+  import("./pages/Admin/dashboard/DashboardPage")
+);
+const OrderListPage = lazy(() => import("./pages/Admin/order/OrderList"));
+const AddPostPage = lazy(() => import("./pages/Admin/post/AddPost"));
+const AddPostCategory = lazy(() =>
+  import("./pages/Admin/Post/AddPostCategory")
+);
+const PostCategoryList = lazy(() =>
+  import("./pages/Admin/Post/PostCategoryList")
+);
+const PostListPage = lazy(() => import("./pages/Admin/post/PostList"));
+const AddProductPage = lazy(() => import("./pages/Admin/product/AddProduct"));
+const ProductListPage = lazy(() => import("./pages/Admin/product/ProductList"));
+const UserListPage = lazy(() => import("./pages/Admin/Users/UserList"));
+const ForgotPasswordPage = lazy(() =>
+  import("./pages/Authentication/ForgotPasswordPage")
+);
+const OtpVerificationPage = lazy(() =>
+  import("./pages/Authentication/OtpVerificationPage")
+);
+const SignInPage = lazy(() => import("./pages/Authentication/SignInPage"));
+const SignUpPage = lazy(() => import("./pages/Authentication/SignUpPage"));
+const SingleBlogPage = lazy(() => import("./pages/Blog/SingleBlogPage"));
+const ContactPage = lazy(() => import("./pages/Contact/ContactPage"));
+const NotFoundPage = lazy(() => import("./pages/Error/NotFoundPage"));
+const ImageSearchResult = lazy(() => import("./pages/Image/ImageSearchResult"));
+const DetailOrderPage = lazy(() => import("./pages/myorder/DetailOrderPage"));
+const MyOrderPage = lazy(() => import("./pages/myorder/MyOrderPage"));
+const SettingPage = lazy(() => import("./pages/Setting/SettingPage"));
+const SingleProductPage = lazy(() => import("./pages/Shop/SingleProductPage"));
 const BlogPage = lazy(() => import("./pages/Blog/BlogPage"));
 const CartPage = lazy(() => import("./pages/Cart/CartPage"));
 const CheckoutPage = lazy(() => import("./pages/Checkout/CheckoutPage"));
@@ -92,7 +105,6 @@ function App() {
             <Route path="add-post" element={<AddPostPage />} />
             <Route path="edit-post/:id" element={<AddPostPage />} />
             <Route path="contact-list" element={<ContactListPage />} />
-            <Route path="add-contact" element={<AddContactPage />} />
             <Route path="order-list" element={<OrderListPage />} />
             <Route path="user-list" element={<UserListPage />} />
           </Route>

@@ -1,9 +1,9 @@
 // src/axiosConfig.js
 import axios from "axios";
-
+const BASE_URL = "https://chuyennganh3.onrender.com";
 // Tạo một instance của axios
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL+"/api/", // URL của API
+  baseURL: BASE_URL+"/api/", // URL của API
   timeout: 10000, // Thời gian timeout (ms)
   headers: {
     "Content-Type": "application/json", // Loại dữ liệu mặc định

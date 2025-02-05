@@ -7,8 +7,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { addCategoryBlog, updateCategoryBlog } from "../../../features/categoryBlog/categoryBlogSlice";
 import { fetchCategoryProductById } from "../../../features/categoryProduct/categoryProductSlice";
 
-export default function AddPostCategory() {
-  const { id } = useParams();
+
+const AddPostCategory = () => {
+   const { id } = useParams();
   const {
     register,
     handleSubmit,
@@ -100,3 +101,5 @@ export default function AddPostCategory() {
     </div>
   );
 }
+
+export default AddPostCategory;

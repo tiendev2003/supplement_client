@@ -23,8 +23,8 @@ import {
 import formatDate from "../../../utils/formatDate";
 import formatCurrency from "../../../utils/formatMoney";
 
-export default function OrderList() {
-  const dispatch = useDispatch();
+const OrderList = () => {
+   const dispatch = useDispatch();
   const {
     ordersByAdmin  ,
     loading,
@@ -428,3 +428,5 @@ export default function OrderList() {
     </div>
   );
 }
+
+export default OrderList;

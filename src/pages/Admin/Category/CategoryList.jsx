@@ -21,8 +21,10 @@ import {
   getCategoryProducts,
 } from "../../../features/categoryProduct/categoryProductSlice";
 
-export default function CategoryList() {
-  const dispatch = useDispatch();
+
+const CategoryList = () => {
+
+   const dispatch = useDispatch();
   const { categoryProducts = [], loading } = useSelector(
     (state) => state.categoryProducts
   );
@@ -412,3 +414,4 @@ export default function CategoryList() {
     </div>
   );
 }
+export default CategoryList;

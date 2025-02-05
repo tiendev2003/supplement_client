@@ -11,7 +11,7 @@ import {
   updateCategoryProduct,
 } from "../../../features/categoryProduct/categoryProductSlice";
 
-export default function AddCategory() {
+const AddCategory = () => {
   const {
     register,
     handleSubmit,
@@ -109,15 +109,13 @@ export default function AddCategory() {
       }
 
       if (id) {
-        await dispatch(
-          updateCategoryProduct({ id, formData })
-        ).unwrap();
+        await dispatch(updateCategoryProduct({ id, formData })).unwrap();
         toast.success("Category updated successfully");
         navigate(-1);
       } else {
         await dispatch(addCategoryProduct(formData)).unwrap();
-        toast.success("Category added successfully");        navigate(-1);
-
+        toast.success("Category added successfully");
+        navigate(-1);
       }
     } catch (error) {
       console.error("Failed to save category: ", error);
@@ -159,10 +157,12 @@ export default function AddCategory() {
                     src={
                       categoryData.image instanceof File
                         ? URL.createObjectURL(categoryData.image)
-                        : `${import.meta.env.VITE_API_URL}/${categoryData.image}`
+                        : `${import.meta.env.VITE_API_URL}/${
+                            categoryData.image
+                          }`
                     }
                     alt="Preview"
-                    crossOrigin="anonymous" 
+                    crossOrigin="anonymous"
                     className="h-full w-full object-cover rounded-lg"
                   />
                   <button
@@ -225,4 +225,5 @@ export default function AddCategory() {
       </form>
     </div>
   );
-}
+};
+export default AddCategory;

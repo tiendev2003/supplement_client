@@ -14,8 +14,8 @@ import {
   getContacts,
 } from "../../../features/contact/contactSlice";
 
-export default function ContactList() {
-  const [selectedContacts, setSelectedContacts] = useState([]);
+const ContactList = () => {
+   const [selectedContacts, setSelectedContacts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -331,3 +331,4 @@ export default function ContactList() {
     </div>
   );
 }
+export default ContactList;

@@ -17,10 +17,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { deleteCategoryBlog, getCategoryBlogs } from "../../../features/categoryBlog/categoryBlogSlice";
- 
 
-export default function PostCategoryList() {
-  const dispatch = useDispatch();
+
+const PostCategoryList = () => {
+
+   const dispatch = useDispatch();
   const { categoryBlogs, loading, total, pages } = useSelector(
     (state) => state.blogCategories
   );
@@ -406,3 +407,4 @@ export default function PostCategoryList() {
     </div>
   );
 }
+export default PostCategoryList;

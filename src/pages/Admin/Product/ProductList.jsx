@@ -20,8 +20,8 @@ import {
   getProducts,
 } from "../../../features/product/productSlice";
 
-export default function ProductList() {
-  const dispatch = useDispatch();
+const ProductList = () => {
+   const dispatch = useDispatch();
   const { products = [], loading } = useSelector((state) => state.products);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -421,3 +421,4 @@ export default function ProductList() {
     </div>
   );
 }
+export default ProductList;

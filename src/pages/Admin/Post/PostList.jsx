@@ -17,8 +17,10 @@ import * as XLSX from "xlsx";
 import { deleteBlog, getBlogs } from "../../../features/blogs/blogSlice";
 import { getAllUsers } from "../../../features/user/userSlice";
 
-export default function PostList() {
-  const dispatch = useDispatch();
+
+
+const PostList = () => {
+   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { blogs, loading, total, pages, } = useSelector(
     (state) => state.blogPosts
@@ -446,3 +448,5 @@ export default function PostList() {
     </div>
   );
 }
+
+export default PostList;

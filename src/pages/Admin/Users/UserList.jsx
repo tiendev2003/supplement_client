@@ -12,8 +12,8 @@ import { Link } from "react-router-dom";
 import { getAllUsers } from "../../../features/user/userSlice";
  
 
-export default function UserListPage() {
-  const [selectedUsers, setSelectedUsers] = useState([]);
+const UserListPage = () => {
+   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -278,3 +278,4 @@ export default function UserListPage() {
     </div>
   );
 }
+export default UserListPage;
