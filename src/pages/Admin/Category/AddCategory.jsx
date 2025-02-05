@@ -158,7 +158,7 @@ const AddCategory = () => {
           <div className="p-4 rounded-lg bg-gray-200 text-black dark:bg-gray-800 dark:text-white">
             <h3 className="text-lg font-semibold">Thumbnail</h3>
             <p className="text-sm text-gray-400">Photo</p>
-            <label className="border-dashed border-2 flex flex-col items-center justify-center h-40 rounded-lg cursor-pointer border-gray-400 dark:border-gray-600">
+            <label className="border-dashed border-2 flex flex-col items-center justify-center  rounded-lg cursor-pointer border-gray-400 dark:border-gray-600">
               {categoryData.image ? (
                 <div className="relative h-full w-full">
                   <img
@@ -171,7 +171,7 @@ const AddCategory = () => {
                     }
                     alt="Preview"
                     crossOrigin="anonymous"
-                    className="h-full w-full object-cover rounded-lg"
+                    className="w-full object-cover rounded-lg"
                   />
                   <button
                     onClick={handleRemoveImage}

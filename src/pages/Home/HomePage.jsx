@@ -8,47 +8,7 @@ import HeroSlide from "../../components/Hero/HeroSlide";
 import { ProductCard } from "../../components/product/productCard";
 import { getCategoryProducts } from "../../features/categoryProduct/categoryProductSlice";
 import { getProducts } from "../../features/product/productSlice";
-
-const newArrivals = [
-  {
-    name: "Loveseat Sofa",
-    price: 199.99,
-    originalPrice: 240.0,
-    image: "/placeholder.svg",
-    rating: 5,
-    isNew: true,
-    discount: 20,
-  },
-  {
-    name: "Table Lamp",
-    price: 34.99,
-    image: "/placeholder.svg",
-    rating: 5,
-    isNew: true,
-  },
-  {
-    name: "Beige Table Lamp",
-    price: 24.99,
-    image: "/placeholder.svg",
-    rating: 5,
-    isNew: true,
-  },
-  {
-    name: "Storage Basket",
-    price: 24.99,
-    image: "/placeholder.svg",
-    rating: 5,
-    isNew: true,
-  },
-  {
-    name: "Toaster",
-    price: 229.99,
-    image: "/placeholder.svg",
-    rating: 5,
-    isNew: true,
-    discount: 25,
-  },
-];
+ 
 
 const features = [
   {

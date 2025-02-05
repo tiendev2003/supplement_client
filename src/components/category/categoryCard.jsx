@@ -10,7 +10,7 @@ export function CategoryCard({ name, image, slug }) {
           src={import.meta.env.VITE_API_URL +"/"+ image || "/placeholder.svg"}
           alt={name}
           crossOrigin="anonymous"
-          className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+          className="object-contain w-full transition-transform duration-300 group-hover:scale-105"
         />
       </div>
       <div className="p-4">
