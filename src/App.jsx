@@ -11,28 +11,26 @@ const AddAddressPage = lazy(() => import("./pages/Address/AddAddressPage"));
 const AddressPage = lazy(() => import("./pages/Address/AddressPage"));
 const AddBanner = lazy(() => import("./pages/Admin/Banner/AddBanner"));
 const BannerList = lazy(() => import("./pages/Admin/Banner/BannerList"));
-const AddCategoryPage = lazy(() =>
-  import("./pages/Admin/category/AddCategory")
-);
-const CategoryListPage = lazy(() =>
+
+const CategoryList = lazy(() =>
   import("./pages/Admin/category/CategoryList")
 );
-const ContactListPage = lazy(() => import("./pages/Admin/contact/ContactList"));
+const ContactList = lazy(() => import("./pages/Admin/contact/ContactList"));
 const DashboardPage = lazy(() =>
   import("./pages/Admin/dashboard/DashboardPage")
 );
-const OrderListPage = lazy(() => import("./pages/Admin/order/OrderList"));
-const AddPostPage = lazy(() => import("./pages/Admin/post/AddPost"));
+const OrderList = lazy(() => import("./pages/Admin/order/OrderList"));
+const AddPost = lazy(() => import("./pages/Admin/post/AddPost"));
 const AddPostCategory = lazy(() =>
   import("./pages/Admin/Post/AddPostCategory")
 );
 const PostCategoryList = lazy(() =>
   import("./pages/Admin/Post/PostCategoryList")
 );
-const PostListPage = lazy(() => import("./pages/Admin/post/PostList"));
-const AddProductPage = lazy(() => import("./pages/Admin/product/AddProduct"));
-const ProductListPage = lazy(() => import("./pages/Admin/product/ProductList"));
-const UserListPage = lazy(() => import("./pages/Admin/Users/UserList"));
+const PostList = lazy(() => import("./pages/Admin/post/PostList"));
+const AddProduct = lazy(() => import("./pages/Admin/product/AddProduct"));
+const ProductList = lazy(() => import("./pages/Admin/product/ProductList"));
+const UserList = lazy(() => import("./pages/Admin/Users/UserList"));
 const ForgotPasswordPage = lazy(() =>
   import("./pages/Authentication/ForgotPasswordPage")
 );
@@ -54,6 +52,9 @@ const CartPage = lazy(() => import("./pages/Cart/CartPage"));
 const CheckoutPage = lazy(() => import("./pages/Checkout/CheckoutPage"));
 const HomePage = lazy(() => import("./pages/Home/HomePage"));
 const ShopPage = lazy(() => import("./pages/Shop/ShopPage"));
+const AddCategory = lazy(() =>
+  import("./pages/Admin/category/AddCategory")
+);
 
 function App() {
   return (
@@ -93,20 +94,20 @@ function App() {
             <Route path="banner" element={<BannerList />} />
             <Route path="add-banner" element={<AddBanner />} />
             <Route path="edit-banner/:id" element={<AddBanner />} />
-            <Route path="product-list" element={<ProductListPage />} />
-            <Route path="add-product" element={<AddProductPage />} />
-            <Route path="edit-product/:id" element={<AddProductPage />} />
-            <Route path="category-list" element={<CategoryListPage />} />
-            <Route path="add-category" element={<AddCategoryPage />} />
-            <Route path="edit-category/:id" element={<AddCategoryPage />} />
-            <Route path="post-list" element={<PostListPage />} />
+            <Route path="product-list" element={<ProductList />} />
+            <Route path="add-product" element={<AddProduct />} />
+            <Route path="edit-product/:id" element={<AddProduct />} />
+            <Route path="category-list" element={<CategoryList />} />
+            <Route path="add-category" element={<AddCategory />} />
+            <Route path="edit-category/:id" element={<AddCategory />} />
+            <Route path="post-list" element={<PostList />} />
             <Route path="post-category-list" element={<PostCategoryList />} />
             <Route path="add-post-category" element={<AddPostCategory />} />
-            <Route path="add-post" element={<AddPostPage />} />
-            <Route path="edit-post/:id" element={<AddPostPage />} />
-            <Route path="contact-list" element={<ContactListPage />} />
-            <Route path="order-list" element={<OrderListPage />} />
-            <Route path="user-list" element={<UserListPage />} />
+            <Route path="add-post" element={<AddPost />} />
+            <Route path="edit-post/:id" element={<AddPost />} />
+            <Route path="contact-list" element={<ContactList />} />
+            <Route path="order-list" element={<OrderList />} />
+            <Route path="user-list" element={<UserList />} />
           </Route>
         </Routes>
       </Suspense>
