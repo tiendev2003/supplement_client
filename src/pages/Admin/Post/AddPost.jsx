@@ -5,6 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import GlobalLoading from "../../../components/GlobalLoading/GlobalLoading";
 import {
   addBlog,
   fetchBlogById,
@@ -163,6 +164,7 @@ const AddPost = () => {
 
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white text-black dark:bg-gray-900 dark:text-white">
+      {loading && (<GlobalLoading />)}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">

@@ -65,7 +65,7 @@ const SingleBlogPage = () => {
 
                   <div className="prose max-w-none">
                     <div
-                      className="space-y-12"
+                      className="space-y-2"
                       dangerouslySetInnerHTML={{ __html: blog.content }}
                     ></div>
                   </div>
