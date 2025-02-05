@@ -1,4 +1,4 @@
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
 import {
   Calendar,
   ChevronRight,
@@ -16,12 +16,13 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { deleteCategoryBlog, getCategoryBlogs } from "../../../features/categoryBlog/categoryBlogSlice";
-
+import {
+  deleteCategoryBlog,
+  getCategoryBlogs,
+} from "../../../features/categoryBlog/categoryBlogSlice";
 
 const PostCategoryList = () => {
-
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const { categoryBlogs, loading, total, pages } = useSelector(
     (state) => state.blogCategories
   );
@@ -90,9 +91,7 @@ const PostCategoryList = () => {
 
   const confirmDelete = async () => {
     try {
-      await dispatch(
-        deleteCategoryBlog(categoryToDelete.category_id)
-      ).unwrap();
+      await dispatch(deleteCategoryBlog(categoryToDelete.category_id)).unwrap();
       toast.success("Category deleted successfully");
     } catch (error) {
       console.error(error);
@@ -117,7 +116,14 @@ const PostCategoryList = () => {
     reader.readAsArrayBuffer(file);
   };
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' , hour: 'numeric', minute: 'numeric', second: 'numeric' };
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   const handleExport = () => {
@@ -144,6 +150,7 @@ const PostCategoryList = () => {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
+                type="button"
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
                 onClick={() => document.getElementById("import-input").click()}
               >
@@ -158,6 +165,7 @@ const PostCategoryList = () => {
                 onChange={handleImport}
               />
               <button
+                type="button"
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
                 onClick={handleExport}
               >
@@ -165,6 +173,7 @@ const PostCategoryList = () => {
                 Export
               </button>
               <button
+                type="button"
                 className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                 onClick={() => navigate("/admin/add-post-category")}
               >
@@ -187,11 +196,17 @@ const PostCategoryList = () => {
               />
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+              >
                 <Calendar className="h-4 w-4" />
                 Select Dates
               </button>
-              <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-200 dark:bg-[#081028] dark:border-gray-600 dark:hover:bg-gray-700"
+              >
                 <Filter className="h-4 w-4" />
                 Filters
               </button>
@@ -275,10 +290,13 @@ const PostCategoryList = () => {
                         </td>
                         <td className="px-6 py-4">{category.name}</td>
                         <td className="px-6 py-4">{category.description}</td>
-                        <td className="px-6 py-4">{formatDate(category.createdAt)}</td>
+                        <td className="px-6 py-4">
+                          {formatDate(category.createdAt)}
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <button
+                              type="button"
                               className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
                               onClick={() =>
                                 navigate(
@@ -289,6 +307,7 @@ const PostCategoryList = () => {
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
+                              type="button"
                               className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
                               onClick={() => openDeleteDialog(category)}
                             >
@@ -306,11 +325,12 @@ const PostCategoryList = () => {
           {/* Pagination */}
           <div className="px-6 py-4 flex items-center justify-between border-t border-gray-300 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {currentPage * 10 - 9}-
-              {Math.min(currentPage * 10, total)} of {total}
+              {currentPage * 10 - 9}-{Math.min(currentPage * 10, total)} of{" "}
+              {total}
             </div>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
@@ -320,6 +340,7 @@ const PostCategoryList = () => {
               {[...Array(totalPages)].map((_, index) => (
                 <button
                   key={index}
+                  type="button"
                   className={`px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 ${
                     currentPage === index + 1
                       ? "bg-gray-300 dark:bg-gray-700"
@@ -331,6 +352,7 @@ const PostCategoryList = () => {
                 </button>
               ))}
               <button
+                type="button"
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
@@ -345,7 +367,7 @@ const PostCategoryList = () => {
       {/* Delete Confirmation Dialog */}
       <Transition appear show={isDeleteDialogOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeDeleteDialog}>
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
             enterFrom="opacity-0"
@@ -355,11 +377,11 @@ const PostCategoryList = () => {
             leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
+          </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
+              <TransitionChild
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -368,13 +390,13 @@ const PostCategoryList = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-[#081028]">
-                  <Dialog.Title
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-[#081028]">
+                  <DialogTitle
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
                   >
                     Delete Category
-                  </Dialog.Title>
+                  </DialogTitle>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Are you sure you want to delete the category "
@@ -398,13 +420,13 @@ const PostCategoryList = () => {
                       Delete
                     </button>
                   </div>
-                </Dialog.Panel>
-              </Transition.Child>
+                </DialogPanel>
+              </TransitionChild>
             </div>
           </div>
         </Dialog>
       </Transition>
     </div>
   );
-}
+};
 export default PostCategoryList;

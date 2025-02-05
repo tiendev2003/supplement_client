@@ -191,6 +191,7 @@ const AddPost = () => {
                     className="h-full w-full object-cover rounded-lg"
                   />
                   <button
+                    type="button"
                     onClick={handleRemoveImage}
                     className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                   >
@@ -201,6 +202,7 @@ const AddPost = () => {
                 <div className="text-center p-4">
                   <p>Drag and drop image here, or click add image</p>
                   <button
+                    type="button"
                     className="mt-2 bg-indigo-500 text-white px-4 py-2 rounded-lg"
                     onClick={() =>
                       document.querySelector('input[type="file"]').click()
