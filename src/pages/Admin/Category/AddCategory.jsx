@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import slugify from "slugify";
+import GlobalLoading from "../../../components/GlobalLoading/GlobalLoading";
 import {
   addCategoryProduct,
   fetchCategoryProductById,
@@ -23,6 +24,7 @@ const AddCategory = () => {
     slug: "",
     image: null,
   });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -37,6 +39,7 @@ const AddCategory = () => {
 
   useEffect(() => {
     if (id) {
+      setLoading(true);
       dispatch(fetchCategoryProductById(id)).then((response) => {
         const category = response.payload;
         for (const [key, value] of Object.entries(category)) {
@@ -47,6 +50,7 @@ const AddCategory = () => {
           slug: category.slug,
           image: category.image,
         });
+        setLoading(false);
       });
     }
   }, [id, dispatch, setValue]);
@@ -100,6 +104,7 @@ const AddCategory = () => {
 
   const onSubmit = async (data) => {
     try {
+    setLoading(true);
       const { name, slug, image } = categoryData;
       const formData = new FormData();
       formData.append("name", name);
@@ -120,11 +125,14 @@ const AddCategory = () => {
     } catch (error) {
       console.error("Failed to save category: ", error);
       toast.error(error.message ?? error.error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white text-black dark:bg-gray-900 dark:text-white">
+      {loading && <GlobalLoading />}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">

@@ -13,7 +13,7 @@ import {
 import { getCategoryBlogs } from "../../../features/categoryBlog/categoryBlogSlice";
 
 const AddPost = () => {
-   const {
+  const {
     register,
     handleSubmit,
     control,
@@ -25,6 +25,7 @@ const AddPost = () => {
   const [tagInput, setTagInput] = useState("");
   const [image, setImage] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -42,16 +43,27 @@ const AddPost = () => {
 
   useEffect(() => {
     if (id) {
-      dispatch(fetchBlogById(id)).then((response) => {
-        const blog = response.payload;
-        for (const [key, value] of Object.entries(blog)) {
-          setValue(key, value);
-        }
-        setTags(JSON.parse(blog.tags || "[]"));
-        setImage(blog.image);
-        setValue("categoryId", blog.category_id); // Set the selected category
-        editorRef.current.setContent(blog.content); // Set the content in the editor
-      });
+      setLoading(true);
+      dispatch(fetchBlogById(id))
+        .then((response) => {
+          const blog = response.payload;
+          for (const [key, value] of Object.entries(blog)) {
+            setValue(key, value);
+          }
+          setTags(JSON.parse(blog.tags || "[]"));
+          setImage(blog.image);
+          setValue("categoryId", blog.category_id); // Set the selected category
+          editorRef.current.setContent(blog.content); // Set the content in the editor
+        })
+        .catch((error) => {
+          toast.error(
+            "Failed to fetch post: " + (error.message || error.error)
+          );
+          console.error("Failed to fetch post: ", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }, [id, dispatch, setValue]);
 
@@ -106,6 +118,7 @@ const AddPost = () => {
   };
 
   const onSubmit = async (data) => {
+    setLoading(true);
     if (!image) {
       setError("Image is required");
       return;
@@ -132,8 +145,10 @@ const AddPost = () => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to save post: " + (error.message || error.error));
+    } finally {
+      setLoading(false);
     }
-  };
+  }; 
 
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white text-black dark:bg-gray-900 dark:text-white">
@@ -335,6 +350,6 @@ const AddPost = () => {
       </form>
     </div>
   );
-}
+};
 
 export default AddPost;

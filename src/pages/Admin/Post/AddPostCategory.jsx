@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import GlobalLoading from "../../../components/GlobalLoading/GlobalLoading";
 import { addCategoryBlog, updateCategoryBlog } from "../../../features/categoryBlog/categoryBlogSlice";
 import { fetchCategoryProductById } from "../../../features/categoryProduct/categoryProductSlice";
 
@@ -18,20 +19,27 @@ const AddPostCategory = () => {
   } = useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const [loading, setLoading] = React.useState(false);
   useEffect(() => {
     if (id) {
+      setLoading(true);
       dispatch(fetchCategoryProductById(id)).then((response) => {
         const category = response.payload;
         for (const [key, value] of Object.entries(category)) {
           setValue(key, value);
         }
+        setLoading(false);
+      }).catch((error) => {
+        toast.error(error.message ?? error.error);
+        console.error("Failed to fetch category: ", error);
+        setLoading(false);
       });
     }
   }, [id, dispatch, setValue]);
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
       if (id) {
         await dispatch(updateCategoryBlog({ id, ...data })).unwrap();
         toast.success("Category updated successfully");
@@ -43,11 +51,15 @@ const AddPostCategory = () => {
     } catch (error) {
       toast.error(error.message ?? error.error);
       console.error("Failed to save category: ", error);
+    } finally {
+      setLoading(false);
     }
+
   };
 
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white text-black dark:bg-gray-900 dark:text-white">
+      {loading && (<GlobalLoading />)}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">{id ? "Edit Category" : "Add New Category"}</h2>
         <div className="flex gap-2">
