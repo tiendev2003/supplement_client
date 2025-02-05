@@ -64,7 +64,7 @@ const AddPostCategory = () => {
         <h2 className="text-2xl font-semibold">{id ? "Edit Category" : "Add New Category"}</h2>
         <div className="flex gap-2">
           <Link
-            to="/admin/categories"
+            to="/admin/post-category-list"
             className="bg-gray-700 px-4 text-white py-2 rounded-lg flex items-center gap-2"
           >
             <XIcon size={16} /> Cancel

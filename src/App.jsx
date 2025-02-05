@@ -99,6 +99,7 @@ function App() {
             <Route path="post-list" element={<PostList />} />
             <Route path="post-category-list" element={<PostCategoryList />} />
             <Route path="add-post-category" element={<AddPostCategory />} />
+            <Route path="edit-post-category/:id" element={<AddPostCategory />} />
             <Route path="add-post" element={<AddPost />} />
             <Route path="edit-post/:id" element={<AddPost />} />
             <Route path="contact-list" element={<ContactList />} />
