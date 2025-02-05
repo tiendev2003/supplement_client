@@ -64,6 +64,18 @@ export default function AccountSidebar() {
               </li>
             );
           })}
+          {/*  nếu là admin thì có thêm đường dẫn đi qua admin */}
+          {userInfo.role === "user" && (
+            <li>
+              <Link
+                to="/admin"
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 hover:text-gray-900"
+              >
+                <Home className="h-5 w-5" />
+                Admin
+              </Link>
+            </li>
+          )}
           <li>
             <button
               onClick={open}
