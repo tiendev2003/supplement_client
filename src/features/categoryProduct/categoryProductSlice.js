@@ -18,7 +18,7 @@ export const fetchCategoryProductById = createAsyncThunk(
   "categoryProduct/fetchCategoryProductById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(`/category-products/${id}`);
+       const response = await axiosInstance.get(`/category-products/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -30,7 +30,6 @@ export const addCategoryProduct = createAsyncThunk(
   "categoryProduct/addCategoryProduct",
   async (data, { rejectWithValue }) => {
     try {
-      console.log(data);
       const response = await axiosInstance.post("/category-products", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -45,8 +44,7 @@ export const updateCategoryProduct = createAsyncThunk(
   "categoryProduct/updateCategoryProduct",
   async (data, { rejectWithValue }) => {
     try {
-      console.log(data);
-      const response = await axiosInstance.put(
+       const response = await axiosInstance.put(
         `/category-products/${data.id}`,
         data.formData,
         { headers: { "Content-Type": "multipart/form-data" } }

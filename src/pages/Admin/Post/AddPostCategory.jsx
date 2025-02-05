@@ -5,8 +5,7 @@ import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import GlobalLoading from "../../../components/GlobalLoading/GlobalLoading";
-import { addCategoryBlog, updateCategoryBlog } from "../../../features/categoryBlog/categoryBlogSlice";
-import { fetchCategoryProductById } from "../../../features/categoryProduct/categoryProductSlice";
+import { addCategoryBlog, fetchCategoryBlogById, updateCategoryBlog } from "../../../features/categoryBlog/categoryBlogSlice";
 
 
 const AddPostCategory = () => {
@@ -23,8 +22,9 @@ const AddPostCategory = () => {
   useEffect(() => {
     if (id) {
       setLoading(true);
-      dispatch(fetchCategoryProductById(id)).then((response) => {
+      dispatch(fetchCategoryBlogById(id)).then((response) => {
         const category = response.payload;
+        console.log("category", category);
         for (const [key, value] of Object.entries(category)) {
           setValue(key, value);
         }
