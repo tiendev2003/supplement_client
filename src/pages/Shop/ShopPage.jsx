@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import HoverAction from "../../components/product/HoverAction";
-import { Pagination } from "../../components/product/pagination";
+import { Pagination } from "../../components/product/Pagination";
 import { getCategoryProducts } from "../../features/categoryProduct/categoryProductSlice";
 import { getProducts } from "../../features/product/productSlice";
 import formatCurrency from "../../utils/formatMoney";
