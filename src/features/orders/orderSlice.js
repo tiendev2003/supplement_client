@@ -3,9 +3,11 @@ import axiosInstance from "../../api/axiosConfig";
 
 export const getOrders = createAsyncThunk(
   "order/getOrders",
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/orders");
+      const response = await axiosInstance.get(`/orders`, {
+        params: { page, limit },
+      });
       console.log(response.data);
       return response.data;
     } catch (error) {
@@ -60,6 +62,7 @@ export const getAllOrdersByAdmin = createAsyncThunk(
       const response = await axiosInstance.get(`/orders/admin/all`, {
         params: { page, limit },
       });
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

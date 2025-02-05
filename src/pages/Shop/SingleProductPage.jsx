@@ -6,7 +6,12 @@ import { Link, useParams } from "react-router-dom";
 import axiosInstance from "../../api/axiosConfig";
 import GlobalLoading from "../../components/GlobalLoading/GlobalLoading";
 import ImageMagnifier from "../../components/ImageMagnifier"; // Import the ImageMagnifier component
-import { addToCart, getCart } from "../../features/cart/cartSlice";
+import {
+  addToCart,
+  clearFlyingItem,
+  getCart,
+  setFlyingItem,
+} from "../../features/cart/cartSlice";
 import { fetchProductBySlug } from "../../features/product/productSlice";
 import formatDate from "../../utils/formatDate";
 import formatCurrency from "../../utils/formatMoney";
@@ -14,9 +19,9 @@ import formatCurrency from "../../utils/formatMoney";
 const tabs = [
   "Additional Info",
   "Description",
-  "Benefits",
-  "Nutrition Facts",
   "Ingredients",
+  "Nutrition Facts",
+  "Benefits",
   "Reviews",
 ];
 
@@ -58,17 +63,34 @@ const SingleProductPage = () => {
     }
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (event) => {
     if (!userInfo) {
       toast.error("Please login to add product to cart");
       return;
     }
+    const rect = event.target.getBoundingClientRect();
+    console.log(rect);
+    // Set thông tin item bay
+    dispatch(
+      setFlyingItem({
+        id: product.id,
+        image: product.images[0].url,
+        startX: rect.left + rect.width / 2,
+        startY: rect.top + rect.height / 2,
+      })
+    );
+
     try {
       await dispatch(
         addToCart({ productId: product.product_id, quantity })
       ).unwrap();
       await dispatch(getCart()).unwrap();
-      toast.success("Product added to cart successfully");
+      setTimeout(() => {
+        dispatch(clearFlyingItem());
+      }, 800);
+      toast.success("Product added to cart successfully", {
+        position: "top-center",
+      });
     } catch (error) {
       console.log(error.message);
 
@@ -219,6 +241,7 @@ const SingleProductPage = () => {
                   </button>
                 </div>
                 <button
+                  type="button"
                   className="flex-1 bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800"
                   onClick={handleAddToCart}
                 >

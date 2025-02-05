@@ -9,6 +9,7 @@ import {
     fetchBannerById,
     updateBanner,
 } from "../../../features/banner/bannerSlice";
+import GlobalLoading from "../../../components/GlobalLoading/GlobalLoading";
 
 export default function AddBanner() {
   const {
@@ -23,6 +24,7 @@ export default function AddBanner() {
     image: null,
   });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -91,6 +93,7 @@ export default function AddBanner() {
 
   const onSubmit = async (data) => {
     try {
+      setIsLoading(true);
       const { title, status, image } = bannerData;
       const formData = new FormData();
       formData.append("title", title);
@@ -111,11 +114,14 @@ export default function AddBanner() {
     } catch (error) {
       console.error("Failed to save banner: ", error);
       toast.error(error.message ?? error.response.data.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white text-black dark:bg-gray-900 dark:text-white">
+      {isLoading && <GlobalLoading />}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">

@@ -33,11 +33,15 @@ export const getCart = createAsyncThunk(
       const response = await axiosInstance.get("/cart");
       return response.data;
     } catch (error) {
+      if (error.response.status === 402) {
+        return rejectWithValue(error.response.data);
+      }
       toast.error(
         error.response.status === 429 
           ? "Too many requests. Please try again later."
           : error.response.data.message
       );
+     
 
       return rejectWithValue(error.response.data);
     }
@@ -63,6 +67,8 @@ const initialState = {
   cartItems: [],
   loadingCart: false,
   error: null,
+  flyingItem: null, // Thông tin item đang bay
+
 };
 
 const cartSlice = createSlice({
@@ -74,6 +80,12 @@ const cartSlice = createSlice({
       state.cartItems = [];
       state.loadingCart = false;
       state.error = null;
+    },
+    setFlyingItem: (state, action) => {
+      state.flyingItem = action.payload;
+    },
+    clearFlyingItem: (state) => {
+      state.flyingItem = null;
     },
   },
   extraReducers: (builder) => {
@@ -134,5 +146,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCartState } = cartSlice.actions;
+export const { clearCartState,setFlyingItem, clearFlyingItem } = cartSlice.actions;
 export default cartSlice.reducer;

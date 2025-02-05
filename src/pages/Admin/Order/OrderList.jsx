@@ -26,7 +26,7 @@ import formatCurrency from "../../../utils/formatMoney";
 export default function OrderList() {
   const dispatch = useDispatch();
   const {
-    ordersByAdmin = [],
+    ordersByAdmin  ,
     loading,
     total,
     pages,
@@ -44,7 +44,8 @@ export default function OrderList() {
 
   useEffect(() => {
     dispatch(getAllOrdersByAdmin({ page: currentPage, limit }));
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, limit]);
+  console.log(ordersByAdmin)
 
   const toggleSelectAll = () => {
     if (selectedOrders.length === ordersByAdmin.length) {
@@ -63,7 +64,10 @@ export default function OrderList() {
   };
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    if (page > 0 && page <= pages) {
+      setCurrentPage(page);
+      dispatch(getAllOrdersByAdmin({ page, limit }));
+    }
   };
 
   const handleSort = (key) => {
@@ -110,7 +114,7 @@ export default function OrderList() {
     } catch (error) {
       console.error(error);
     } finally {
-      await dispatch(getAllOrdersByAdmin()).unwrap();
+      await dispatch(getAllOrdersByAdmin({ page: currentPage, limit })).unwrap();
     }
     closeDeleteDialog();
   };
@@ -276,7 +280,7 @@ export default function OrderList() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.slice((currentPage - 1) * 10, currentPage * 10).map((order) => (
+                {filteredOrders.map((order) => (
                   <tr key={order.order_id} className="border-b border-gray-300 dark:border-gray-700">
                     <td className="px-6 py-4">
                       <input
@@ -323,9 +327,8 @@ export default function OrderList() {
           {/* Pagination */}
           <div className="px-6 py-4 flex items-center justify-between border-t border-gray-300 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {currentPage * 10 - 9}-
-              {Math.min(currentPage * 10, ordersByAdmin.length)} of{" "}
-              {ordersByAdmin.length}
+              {Math.min((currentPage - 1) * limit + 1, total)}-
+              {Math.min(currentPage * limit, total)} of {total}
             </div>
             <div className="flex items-center gap-2">
               <button

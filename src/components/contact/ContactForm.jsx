@@ -42,7 +42,7 @@ export function ContactForm() {
       try {
         // Handle form submission here
         console.log("Form submitted:", formData)
-        await axiosInstance.post("/contact", formData)
+        await axiosInstance.post("/contacts", formData)
         toast.success("Message sent successfully")
         // Reset form after successful submission
         setFormData({ name: "", email: "", message: "" })

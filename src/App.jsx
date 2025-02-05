@@ -29,6 +29,7 @@ import SignUpPage from "./pages/Authentication/SignUpPage";
 import SingleBlogPage from "./pages/Blog/SingleBlogPage";
 import ContactPage from "./pages/Contact/ContactPage";
 import NotFoundPage from "./pages/Error/NotFoundPage";
+import ImageSearchResult from "./pages/Image/ImageSearchResult";
 import DetailOrderPage from "./pages/myorder/DetailOrderPage";
 import MyOrderPage from "./pages/myorder/MyOrderPage";
 import SettingPage from "./pages/Setting/SettingPage";
@@ -54,6 +55,7 @@ function App() {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/shop" element={<ShopPage />} />
+            <Route path="/search" element={<ImageSearchResult />} />
             <Route path="/shop/:slug" element={<SingleProductPage />} />
             <Route path="/contact" element={<ContactPage />} />
 

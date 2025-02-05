@@ -1,7 +1,9 @@
+import { motion } from "framer-motion";
 import { Menu, ShoppingBag, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { getCart } from "../../features/cart/cartSlice";
 import { useGetUserDetailsQuery } from "../../features/user/authService";
 import { setCredentials } from "../../features/user/userSlice";
 import { CartSidebar } from "./CartSidebar";
@@ -15,7 +17,7 @@ const Header = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-
+  const { cartItems ,  flyingItem} = useSelector((state) => state.cart);
   // automatically authenticate user if token is found
   const { data, isFetching } = useGetUserDetailsQuery("userDetails", {
     pollingInterval: 900000, // 15mins
@@ -24,6 +26,12 @@ const Header = () => {
   useEffect(() => {
     if (data) dispatch(setCredentials(data));
   }, [data, dispatch]);
+  useEffect(() => {
+    if (userInfo) {
+      dispatch(getCart());
+    }
+  }, [userInfo, dispatch]);
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -43,6 +51,25 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+   const cartIconRef = useRef(null);
+  const [cartPosition, setCartPosition] = useState({ x: 0, y: 0 });
+
+  // Cập nhật vị trí icon giỏ hàng khi thay đổi kích thước màn hình
+  useEffect(() => {
+    const updateCartPosition = () => {
+      if (cartIconRef.current) {
+        const rect = cartIconRef.current.getBoundingClientRect();
+         setCartPosition({
+          x: rect.left ,
+          y: rect.top  -100,
+        });
+      }
+    };
+    updateCartPosition();
+    window.addEventListener("resize", updateCartPosition);
+
+    return () => window.removeEventListener("resize", updateCartPosition);
+  }, []);
 
   return (
     <header
@@ -110,16 +137,41 @@ const Header = () => {
               <User className="h-5 w-5" />
             </Link>
             <button
-              className="transition-colors hover:text-gray-600"
+              className="relative transition-colors hover:text-gray-600"
               aria-label="Shopping cart"
+              ref={cartIconRef}
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingBag className="h-5 w-5" />
+
+              <span className="absolute top-0 z-[100000] right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                {cartItems.length ?? 0}
+              </span>
             </button>
           </div>
         </div>
       </div>
-
+      {flyingItem && (
+        <motion.img
+          src={ import.meta.env.VITE_API_URL +"/"+ flyingItem.image}
+          alt="Flying Item"
+          crossOrigin="anonymous"
+          initial={{
+            x: flyingItem.startX,
+            y: flyingItem.startY,
+            opacity: 1,
+            scale: 1,
+          }}
+          animate={{
+            x: cartPosition.x,
+            y: cartPosition.y,
+            opacity: 0,
+            scale: 0.5,
+          }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          className="fixed w-16 h-16 z-50 rounded-2xl"
+        />
+      )}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

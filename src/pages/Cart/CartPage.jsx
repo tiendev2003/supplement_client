@@ -14,6 +14,7 @@ import GlobalLoading from "../../components/GlobalLoading/GlobalLoading";
 
 import axiosInstance from "../../api/axiosConfig";
 import {
+  clearCartState,
   getCart,
   removeFromCart,
   updateCart,
@@ -28,8 +29,7 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const { cartItems, loadingCart } = useSelector((state) => state.cart);
-  const { loading } = useSelector((state) => state.orders);
-
+ const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (userInfo) {
       dispatch(getCart());
@@ -51,26 +51,6 @@ const CartPage = () => {
 
     if (loadingCart) return; // Wait for cart data to load
 
-    // Handle steps 2 and 3 access validation
-    if (stepQuery === 2 || stepQuery === 3) {
-      if (!userInfo) {
-        // toast.error("Please login to proceed");
-        setStep(1);
-        query.set("step", 1);
-        navigate({ search: query.toString() }, { replace: true });
-        return;
-      }
-
-      // Additional check for step 2
-      if (stepQuery === 2 && cartItems.length === 0) {
-        toast.error("Your cart is empty");
-        setStep(1);
-        query.set("step", 1);
-        navigate({ search: query.toString() }, { replace: true });
-        return;
-      }
-    }
-
     setStep(stepQuery);
   }, [cartItems.length, loadingCart, location.search, navigate, userInfo]);
 
@@ -86,6 +66,9 @@ const CartPage = () => {
     } catch (error) {
       if (error.response?.status === 401) {
         toast.error("Please login to update quantity");
+        return;
+      }
+      if (error.response?.status === 402) {
         return;
       }
       toast.error(error.message || "Error updating quantity");
@@ -119,29 +102,101 @@ const CartPage = () => {
     () => subtotal + shippingCosts[shippingMethod],
     [subtotal, shippingMethod, shippingCosts]
   );
-
   const handleSubmit = async (formData) => {
     try {
+      setLoading(true);
+      const orderData = await axiosInstance.post(
+        "/orders",
+        {
+          ...formData,
+          shipping: shippingCosts[shippingMethod],
+          method: shippingMethod,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      console.log(orderData);
+      if (formData.paymentMethod === "cod") {
+        setLoading(false);
+        toast.success("Order submitted successfully");
+        dispatch(clearCartState());
+        setStep(3);
+      }
+      if (formData.paymentMethod === "credit-card") {
+        setLoading(false);
+        toast.success("Redirecting to payment gateway");
+        dispatch(clearCartState());
+        setStep(3);
+      }
+      if (formData.paymentMethod === "momo") {
+        try {
+          const response = await axiosInstance.post(
+            "/orders/payment-with-momo",
+            {
+              total: Number(total) + Number(shippingCosts[shippingMethod]),
+              orderId: orderData.data.data.order_id,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              },
+            }
+          );
+          setLoading(false);
+          window.open(response.data, "_blank");
+
+        } catch (error) {
+          setLoading(false);
+          if (error.response?.status === 402) {
+            return;
+          }
+          toast.error(error.response.data.error || "Error submitting order");
+          setTimeout(() => {
+            dispatch(clearCartState());
+         }, 3000);
+        }
+       
+        // Redirect to MoMo payment gateway
+
+        setTimeout(() => {
+           dispatch(clearCartState());
+        }, 3000);
+      }
+    } catch (error) {
+      setLoading(false);
+      if (error.response?.status === 402) {
+        return;
+      }
+      toast.error(error.response.data.error || "Error submitting order");
+    }
+  };
+
+  const handleSubmit1 = async (formData) => {
+    try {
       let orderData = {};
+      console.log(formData);
       dispatch(
         addOrder({
           ...formData,
           shipping: shippingCosts[shippingMethod],
+          method: shippingMethod,
         })
       )
         .then(async (data) => {
-          console.log(data);
           orderData = data.payload.data;
           setPaymentMethod(formData.paymentMethod);
           if (formData.paymentMethod === "cod") {
             toast.success("Order submitted successfully");
+            dispatch(clearCartState());
             setStep(3);
           }
           if (formData.paymentMethod === "credit-card") {
             toast.success("Redirecting to payment gateway");
-            setTimeout(() => {
-              setStep(3);
-            }, 3000);
+            dispatch(clearCartState());
+            setStep(3);
           }
           if (formData.paymentMethod === "momo") {
             const response = await axiosInstance.post(
@@ -151,19 +206,25 @@ const CartPage = () => {
                 orderId: orderData.order_id,
               }
             );
-            window.location.href = response.data;
-            setStep(3);
+            // Redirect to MoMo payment gateway
+            window.open(response.data, "_blank");
+
             setTimeout(() => {
               setStep(3);
+              dispatch(clearCartState());
             }, 3000);
           }
         })
         .catch((error) => {
-          console.log(error);
+          if (error.response.status === 402) {
+            dispatch(clearCartState());
+          }
           toast.error(error.message || "Error submitting order");
         });
-
     } catch (error) {
+      if (error.response?.status === 402) {
+        return;
+      }
       toast.error(error.message || "Error submitting order");
     }
   };
