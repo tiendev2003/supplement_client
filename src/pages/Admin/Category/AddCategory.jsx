@@ -66,7 +66,7 @@ const AddCategory = () => {
         }));
         setError("");
       } else {
-        setError("Please upload a valid image file.");
+        setError("Please upload a valid image file."); 
       }
     }
   };

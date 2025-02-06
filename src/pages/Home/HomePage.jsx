@@ -8,7 +8,6 @@ import HeroSlide from "../../components/Hero/HeroSlide";
 import { ProductCard } from "../../components/product/productCard";
 import { getCategoryProducts } from "../../features/categoryProduct/categoryProductSlice";
 import { getProducts } from "../../features/product/productSlice";
- 
 
 const features = [
   {
@@ -38,10 +37,15 @@ const HomePage = () => {
   const { categoryProducts } = useSelector((state) => state.categoryProducts);
   const { products } = useSelector((state) => state.products);
   useEffect(() => {
-    dispatch(getCategoryProducts());
+    dispatch(getCategoryProducts({ limit: 6, page: 1 }));
   }, [dispatch]);
   useEffect(() => {
-    dispatch(getProducts());
+    dispatch(
+      getProducts({
+        limit: 10,
+        page: 1,
+      })
+    );
   }, [dispatch]);
   return (
     <>
@@ -83,7 +87,7 @@ const HomePage = () => {
           </Link>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-          {products.map((product, index) => (
+          {products.slice(0, 10).map((product, index) => (
             <ProductCard key={index} {...product} />
           ))}
         </div>

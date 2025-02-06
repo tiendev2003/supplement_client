@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import GlobalLoading from "./components/GlobalLoading/GlobalLoading";
+import { ChatProvider } from "./context/ChatContext";
 import ProtectedRoute from "./routing/ProtectedRoute";
 
 const Layout = lazy(() => import("./layouts"));
@@ -51,63 +52,73 @@ const CheckoutPage = lazy(() => import("./pages/Checkout/CheckoutPage"));
 const HomePage = lazy(() => import("./pages/Home/HomePage"));
 const ShopPage = lazy(() => import("./pages/Shop/ShopPage"));
 const AddCategory = lazy(() => import("./pages/Admin/Category/AddCategory"));
+const ChatBotFullScreen = lazy(() => import("./pages/Chat/ChatBotFullScreen"));
+const ChatDetail = lazy(() => import("./pages/Chat/ChatDetail"));
 
 function App() {
   return (
     <Router>
-      <Suspense fallback={<GlobalLoading />}>
-        <Routes>
-          <Route path="*" element={<NotFoundPage />} />
-          <Route path="/" element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:id" element={<SingleBlogPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/shop" element={<ShopPage />} />
-            <Route path="/search" element={<ImageSearchResult />} />
-            <Route path="/shop/:slug" element={<SingleProductPage />} />
-            <Route path="/contact" element={<ContactPage />} />
+      <ChatProvider>
+        <Suspense fallback={<GlobalLoading />}>
+          <Routes>
+            <Route path="*" element={<NotFoundPage />} />
+            <Route path="/" element={<Layout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:id" element={<SingleBlogPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/shop" element={<ShopPage />} />
+              <Route path="/search" element={<ImageSearchResult />} />
+              <Route path="/shop/:slug" element={<SingleProductPage />} />
+              <Route path="/contact" element={<ContactPage />} />
 
-            <Route element={<ProtectedRoute />}>
-              <Route path="/account" element={<LayoutProfile />}>
-                <Route path="" element={<AccountPage />} />
-                <Route path="address" element={<AddressPage />} />
-                <Route path="setting" element={<SettingPage />} />
-                <Route path="address/add" element={<AddAddressPage />} />
-                <Route path="address/edit/:id" element={<AddAddressPage />} />
-                <Route path="orders" element={<MyOrderPage />} />
-                <Route path="orders/:id" element={<DetailOrderPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/account" element={<LayoutProfile />}>
+                  <Route path="" element={<AccountPage />} />
+                  <Route path="address" element={<AddressPage />} />
+                  <Route path="setting" element={<SettingPage />} />
+                  <Route path="address/add" element={<AddAddressPage />} />
+                  <Route path="address/edit/:id" element={<AddAddressPage />} />
+                  <Route path="orders" element={<MyOrderPage />} />
+                  <Route path="orders/:id" element={<DetailOrderPage />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/otp" element={<OtpVerificationPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/admin" element={<LayoutAdmin />}>
-            <Route path="" element={<DashboardPage />} />
-            <Route path="banner" element={<BannerList />} />
-            <Route path="add-banner" element={<AddBanner />} />
-            <Route path="edit-banner/:id" element={<AddBanner />} />
-            <Route path="product-list" element={<ProductList />} />
-            <Route path="add-product" element={<AddProduct />} />
-            <Route path="edit-product/:id" element={<AddProduct />} />
-            <Route path="category-list" element={<CategoryList />} />
-            <Route path="add-category" element={<AddCategory />} />
-            <Route path="edit-category/:id" element={<AddCategory />} />
-            <Route path="post-list" element={<PostList />} />
-            <Route path="post-category-list" element={<PostCategoryList />} />
-            <Route path="add-post-category" element={<AddPostCategory />} />
-            <Route path="edit-post-category/:id" element={<AddPostCategory />} />
-            <Route path="add-post" element={<AddPost />} />
-            <Route path="edit-post/:id" element={<AddPost />} />
-            <Route path="contact-list" element={<ContactList />} />
-            <Route path="order-list" element={<OrderList />} />
-            <Route path="user-list" element={<UserList />} />
-          </Route>
-        </Routes>
-      </Suspense>
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/otp" element={<OtpVerificationPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/admin" element={<LayoutAdmin />}>
+              <Route path="" element={<DashboardPage />} />
+              <Route path="banner" element={<BannerList />} />
+              <Route path="add-banner" element={<AddBanner />} />
+              <Route path="edit-banner/:id" element={<AddBanner />} />
+              <Route path="product-list" element={<ProductList />} />
+              <Route path="add-product" element={<AddProduct />} />
+              <Route path="edit-product/:id" element={<AddProduct />} />
+              <Route path="category-list" element={<CategoryList />} />
+              <Route path="add-category" element={<AddCategory />} />
+              <Route path="edit-category/:id" element={<AddCategory />} />
+              <Route path="post-list" element={<PostList />} />
+              <Route path="post-category-list" element={<PostCategoryList />} />
+              <Route path="add-post-category" element={<AddPostCategory />} />
+              <Route
+                path="edit-post-category/:id"
+                element={<AddPostCategory />}
+              />
+              <Route path="add-post" element={<AddPost />} />
+              <Route path="edit-post/:id" element={<AddPost />} />
+              <Route path="contact-list" element={<ContactList />} />
+              <Route path="order-list" element={<OrderList />} />
+              <Route path="user-list" element={<UserList />} />
+            </Route>
+            <Route path="/chatbot-fullscreen" element={<ChatBotFullScreen />} />
+            <Route path="/chat/:chatId/detail" element={<ChatDetail />} />
+            <Route path="/chat/:chatId" element={<ChatBotFullScreen />} />
+          </Routes>
+        </Suspense>
+      </ChatProvider>
     </Router>
   );
 }

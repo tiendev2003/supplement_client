@@ -1,8 +1,11 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
+import "slick-carousel/slick/slick-theme.css"; // Import the slick carousel theme
+import "slick-carousel/slick/slick.css"; // Import the slick carousel styles
 import axiosInstance from "../../api/axiosConfig";
 import GlobalLoading from "../../components/GlobalLoading/GlobalLoading";
 import ImageMagnifier from "../../components/ImageMagnifier"; // Import the ImageMagnifier component
@@ -38,6 +41,23 @@ const SingleProductPage = () => {
     rating: 0,
     content: "",
   });
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const sliderRef = useRef(null);
+  const [zoomStyle, setZoomStyle] = useState({});
+
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.target.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top) / height) * 100;
+    setZoomStyle({
+      backgroundPosition: `${x}% ${y}%`,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({});
+  };
+
   useEffect(() => {
     dispatch(fetchProductBySlug(slug));
   }, [dispatch, slug]);
@@ -98,6 +118,32 @@ const SingleProductPage = () => {
     }
   };
 
+  const previousSlide = () => {
+    setSelectedImageIndex((curr) =>
+      curr === 0 ? product.images.length - 1 : curr - 1
+    );
+    if (sliderRef.current) {
+      const slideWidth = sliderRef.current.children[0].offsetWidth;
+      sliderRef.current.scrollTo({
+        left: (selectedImageIndex - 1) * slideWidth - sliderRef.current.offsetWidth / 2 + slideWidth / 2,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const nextSlide = () => {
+    setSelectedImageIndex((curr) =>
+      curr === product.images.length - 1 ? 0 : curr + 1
+    );
+    if (sliderRef.current) {
+      const slideWidth = sliderRef.current.children[0].offsetWidth;
+      sliderRef.current.scrollTo({
+        left: (selectedImageIndex + 1) * slideWidth - sliderRef.current.offsetWidth / 2 + slideWidth / 2,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {loading && <GlobalLoading />}
@@ -107,7 +153,7 @@ const SingleProductPage = () => {
         <>
           <div className="grid md:grid-cols-2 gap-8">
             {/* Product Images */}
-            <TabGroup as="div" className="flex flex-col">
+            <div className="flex flex-col">
               <div className="relative">
                 <div className="absolute left-2 top-2 flex flex-col gap-2">
                   {product.isNew && (
@@ -115,58 +161,67 @@ const SingleProductPage = () => {
                       NEW
                     </div>
                   )}
-                  {product.discount && (
+                  {product.discount && product.discount > 0 && (
                     <div className="rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
                       -{product.discount}%
                     </div>
                   )}
                 </div>
 
-                <TabPanels className="w-full">
-                  {product.images.map((image) => (
-                    <TabPanel key={image.image_id}>
-                      <div className="relative overflow-hidden rounded-lg">
-                        <ImageMagnifier
-                          src={
-                            import.meta.env.VITE_API_URL + "/" + image.url ||
-                            "/placeholder.svg"
-                          }
-                          alt="Tray Table"
-                        />
-                      </div>
-                    </TabPanel>
+                <div className="relative overflow-hidden rounded-lg h-[600px]">
+                  {product.images.map((image, index) => (
+                     <div 
+                     key={index}
+                     className={` relative overflow-hidden rounded-lg `}
+                     >
+                     <ImageMagnifier
+                       src={
+                         import.meta.env.VITE_API_URL + "/" + product.images[selectedImageIndex].url ||
+                         "/placeholder.svg"
+                       }
+                       alt="Tray Table"
+                     />
+                   </div>
                   ))}
-                </TabPanels>
+                </div>
+                <button
+                  onClick={previousSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-lg"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                  <span className="sr-only">Previous slide</span>
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-lg"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                  <span className="sr-only">Next slide</span>
+                </button>
               </div>
-
-              <TabList className="grid grid-cols-3 gap-4 mt-4">
-                {product.images.map((image) => (
-                  <Tab
-                    key={image.image_id}
-                    className="relative aspect-square overflow-hidden rounded-lg focus:outline-none"
-                  >
-                    {({ selected }) => (
-                      <>
-                        <img
-                          src={
-                            import.meta.env.VITE_API_URL + "/" + image.url ||
-                            "/placeholder.svg"
-                          }
-                          alt=""
-                          crossOrigin="anonymous"
-                          className="object-cover w-full h-full"
-                        />
-                        <span
-                          className={`absolute inset-0 ring-2 ring-offset-2 ${
-                            selected ? "ring-black" : "ring-transparent"
-                          }`}
-                        />
-                      </>
-                    )}
-                  </Tab>
+              <div
+                className="flex mt-4 space-x-2 overflow-x-auto"
+                ref={sliderRef}
+              >
+                {product.images.map((image, index) => (
+                  <img
+                    key={index}
+                    src={
+                      import.meta.env.VITE_API_URL + "/" + image.url ||
+                      "/placeholder.svg"
+                    }
+                    crossOrigin="anonymous"
+                    alt={`Thumbnail ${index + 1}`}
+                    className={`w-20 h-20 object-cover cursor-pointer ${
+                      index === selectedImageIndex
+                        ? "border-2 border-black"
+                        : ""
+                    }`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  />
                 ))}
-              </TabList>
-            </TabGroup>
+              </div>
+            </div>
 
             {/* Product Info */}
             <div className="space-y-6">
@@ -198,9 +253,11 @@ const SingleProductPage = () => {
                     (product.price * (100 - product.discount)) / 100
                   )}
                 </span>
-                <span className="text-gray-500 line-through">
-                  {formatCurrency(product.price)}
-                </span>
+                {product.discount && product.discount > 0 && (
+                  <span className="text-gray-500 line-through">
+                    {formatCurrency(product.price)}
+                  </span>
+                )}
               </div>
 
               {/* Product Metadata */}
@@ -519,7 +576,8 @@ const SingleProductPage = () => {
                           src={
                             import.meta.env.VITE_API_URL +
                               "/" +
-                              relatedProduct.images[0].url || "/placeholder.svg"
+                              relatedProduct?.images[0]?.url ||
+                            "/placeholder.svg"
                           }
                           alt={relatedProduct.name}
                           crossOrigin="anonymous"
@@ -531,18 +589,19 @@ const SingleProductPage = () => {
                               NEW
                             </div>
                           )}
-                          {relatedProduct.discount && (
-                            <div className="rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
-                              -{relatedProduct.discount}%
-                            </div>
-                          )}
+                          {relatedProduct.discount &&
+                            relatedProduct.discount > 0 && (
+                              <div className="rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
+                                -{relatedProduct.discount}%
+                              </div>
+                            )}
                         </div>
                       </div>
                       <div className="mt-4 space-y-2">
                         <p className="text-sm text-gray-500">
                           {relatedProduct.category}
                         </p>
-                        <h3 className="text-sm font-medium">
+                        <h3 className="text-lg font-medium line-clamp-3 min-h-[4.5em]">
                           {relatedProduct.name}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -553,11 +612,12 @@ const SingleProductPage = () => {
                                 100
                             )}
                           </p>
-                          {relatedProduct.discount && (
-                            <p className="text-sm text-gray-500 line-through">
-                              {formatCurrency(relatedProduct.price)}
-                            </p>
-                          )}
+                          {relatedProduct.discount &&
+                            relatedProduct.discount > 0 && (
+                              <p className="text-sm text-gray-500 line-through">
+                                {formatCurrency(relatedProduct.price)}
+                              </p>
+                            )}
                         </div>
                       </div>
                     </div>

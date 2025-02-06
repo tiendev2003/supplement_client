@@ -1,16 +1,17 @@
 import { Link } from "react-router-dom";
 
- 
- 
 export function CategoryCard({ name, image, slug }) {
   return (
-    <Link to={`/shop?category=${slug}`} className="group relative block overflow-hidden bg-gray-100 hover:bg-gray-50">
+    <Link
+      to={`/shop?category=${encodeURIComponent(slug)}`}
+      className="group relative block overflow-hidden bg-gray-100 hover:bg-gray-50"
+    >
       <div className="relative aspect-square md:aspect-[4/3]">
         <img
-          src={import.meta.env.VITE_API_URL +"/"+ image || "/placeholder.svg"}
+          src={import.meta.env.VITE_API_URL + "/" + image || "/placeholder.svg"}
           alt={name}
           crossOrigin="anonymous"
-          className="object-contain w-full transition-transform duration-300 group-hover:scale-105"
+          className="object-contain w-full h-full transition-transform duration-300 group-hover:scale-105"
         />
       </div>
       <div className="p-4">
@@ -23,11 +24,15 @@ export function CategoryCard({ name, image, slug }) {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </p>
       </div>
     </Link>
-  )
+  );
 }
-

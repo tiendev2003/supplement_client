@@ -3,9 +3,14 @@ import axiosInstance from "../../api/axiosConfig";
 
 export const getProducts = createAsyncThunk(
   "product/getProducts",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 12, search = "", minPrice, maxPrice, categories ,sortBy},
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axiosInstance.get("/products");
+      const response = await axiosInstance.get(`/products`, {
+        params: { page, limit, search, minPrice, maxPrice, categorySlug: categories ,sort:sortBy},
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -139,7 +144,7 @@ const productSlice = createSlice({
       state.loading = false;
       state.error = payload;
     });
-  
+
     builder.addCase(deleteProduct.pending, (state) => {
       state.loading = true;
       state.error = null;

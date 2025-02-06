@@ -108,12 +108,12 @@ export function ExpandableSearch() {
             <X className="h-5 w-5" />
           </button>
           {results.length > 0 && (
-            <ul className="mt-4">
+            <ul className="mt-4 w-full bg-white border border-gray-200 rounded-lg  p-2">
               {results.map((result, index) => (
                 <li key={index} className="border-b border-gray-200 py-2 flex">
                   <img
                     src={
-                      import.meta.env.VITE_API_URL + "/" + result.images[0].url
+                      import.meta.env.VITE_API_URL + "/" + result?.images[0]?.url
                     }
                     className="w-12 h-12 mr-2 object-cover"
                     crossOrigin="anonymous"

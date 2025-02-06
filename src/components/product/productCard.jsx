@@ -7,11 +7,11 @@ export function ProductCard({
   price,
   originalPrice,
   images,
-   
+
   isNew,
   discount,
   slug,
-  totalRating
+  totalRating,
 }) {
   return (
     <Link to={`/shop/${slug}`} className="group relative">
@@ -19,7 +19,7 @@ export function ProductCard({
         <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
           <img
             src={
-              import.meta.env.VITE_API_URL + "/" + images[0].url ||
+              import.meta.env.VITE_API_URL + "/" + images[0]?.url ||
               "/placeholder.svg"
             }
             alt={name}
@@ -31,7 +31,7 @@ export function ProductCard({
               NEW
             </div>
           )}
-          {discount && (
+          {discount && discount > 0 && (
             <div className="absolute left-4 top-4 rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
               -{discount}%
             </div>
@@ -54,14 +54,14 @@ export function ProductCard({
               </svg>
             ))}
           </div>
-          <h3 className="text-sm font-medium">{name}</h3>
+          <h3 className="text-lg font-medium line-clamp-3 min-h-[4.5em]">{name}</h3>
           <div className="flex items-center gap-2">
             <p className="font-semibold">
               {formatCurrency((price * (100 - discount)) / 100)}
             </p>
-            {discount && (
+            {discount && discount > 0 && (
               <p className="text-sm text-gray-500 line-through">
-                ${formatCurrency(price)}
+                {formatCurrency(price)}
               </p>
             )}
           </div>
@@ -70,3 +70,13 @@ export function ProductCard({
     </Link>
   );
 }
+
+// Add the following CSS to your global stylesheet or a CSS module
+// .line-clamp-3 {
+//   display: -webkit-box;
+//   -webkit-line-clamp: 3;
+//   -webkit-box-orient: vertical;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   height: 4.5em; /* Adjust based on line height to ensure 3 lines */
+// }

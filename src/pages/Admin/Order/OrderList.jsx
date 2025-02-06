@@ -291,7 +291,7 @@ const OrderList = () => {
                       />
                     </td>
                     <td className="px-6 py-4">{order.user.full_name}</td>
-                    <td className="px-6 py-4">{order.items[0].product.name}</td>
+                    <td className="px-6 py-4">{order.items[0]?.product?.name}</td>
                     <td className="px-6 py-4">{formatCurrency(order.total)}</td>
                     <td className="px-6 py-4">{formatDate(order.created_at)}</td>
                     <td className="px-6 py-4">

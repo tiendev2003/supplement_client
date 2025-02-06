@@ -15,7 +15,7 @@ import {
 } from "../../../features/product/productSlice";
 
 const AddProduct = () => {
-   const {
+  const {
     register,
     handleSubmit,
     setValue,
@@ -31,7 +31,12 @@ const AddProduct = () => {
 
   // Fetch product data if editing
   useEffect(() => {
-    dispatch(getCategoryProducts());
+    dispatch(
+      getCategoryProducts({
+        page: 1,
+        limit: 100,
+      })
+    );
     if (id) {
       dispatch(fetchProductById(id)).then((response) => {
         const product = response.payload.product;
@@ -42,6 +47,7 @@ const AddProduct = () => {
             setValue(key, value);
           }
         }
+        console.log(product.categories);
         setValue("category_id", product.categories[0].category_id);
         setImages(product.images || []);
       });
@@ -168,7 +174,7 @@ const AddProduct = () => {
               </Link>
               <span className="text-gray-600 dark:text-gray-400">&gt;</span>
               <Link
-                to="/product-list"
+                to="/admin/product-list"
                 className="text-indigo-500 hover:text-indigo-400"
               >
                 Product List
@@ -353,7 +359,7 @@ const AddProduct = () => {
                   "",
                   true,
                   categoryProducts.map((category) => ({
-                    value: category.category_id,
+                    value: category.category_id ?? category.name,
                     label: category.name,
                   }))
                 )}
@@ -415,5 +421,5 @@ const AddProduct = () => {
       </form>
     </div>
   );
-}
+};
 export default AddProduct;

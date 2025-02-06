@@ -8,14 +8,17 @@ import App from "./App.jsx";
 import { AppProvider } from "./context/AppContext.jsx";
 import "./index.css";
 import { store } from "./store/store.js";
+import { ChatProvider } from "./context/ChatContext.jsx";
+
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AppProvider>
+
       <Provider store={store}>
         <App />
         <Toaster position="top-right" />
       </Provider>
-    </AppProvider>
+     </AppProvider>
   </StrictMode>
 );

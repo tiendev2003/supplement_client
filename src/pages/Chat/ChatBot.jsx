@@ -1,14 +1,23 @@
+import { Maximize2, X } from "lucide-react";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]); // Lưu trữ tin nhắn
   const [inputValue, setInputValue] = useState(""); // Lưu trữ giá trị input
   const [isTyping, setIsTyping] = useState(false); // Trạng thái đang gõ
+  const [isFullScreen, setIsFullScreen] = useState(false); // Trạng thái toàn màn hình
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Mở/đóng chatbot
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
+  };
+
+  // Chuyển đổi trạng thái toàn màn hình
+  const toggleFullScreen = () => {
+    navigate("/chatbot-fullscreen"); // Chuyển sang trang mới
   };
 
   // Xử lý gửi tin nhắn
@@ -47,33 +56,41 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className={`fixed ${isFullScreen ? "inset-0" : "bottom-8 right-8"} z-50`}>
       {/* Chatbot Button */}
-      <button
-        onClick={toggleChatbot}
-        className="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg hover:bg-blue-600 transition-all duration-300"
-      >
-        <span role="img" aria-label="chat" className="text-2xl">
-          💬
-        </span>
-      </button>
+      {!isOpen && (
+        <button
+          onClick={toggleChatbot}
+          className="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg hover:bg-blue-600 transition-all duration-300"
+        >
+          <span role="img" aria-label="chat" className="text-2xl">
+            💬
+          </span>
+        </button>
+      )}
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 w-80 bg-white rounded-lg shadow-lg animate-slide-up">
+        <div className={`absolute ${isFullScreen ? "inset-0" : "bottom-20 right-0 w-80"} bg-white rounded-lg shadow-lg animate-slide-up`}>
           {/* Header */}
           <div className="bg-blue-500 text-white p-4 rounded-t-lg flex justify-between items-center">
             <h3 className="text-lg font-semibold">Chatbot</h3>
-            <button
-              onClick={toggleChatbot}
-              className="text-white hover:text-gray-200 text-2xl"
-            >
-              ×
-            </button>
+            <div className="flex gap-2">
+            <Maximize2 
+              onClick={toggleFullScreen}
+              className="text-white hover:text-gray-200 text-2xl cursor-pointer"
+            />
+              <button
+                onClick={toggleChatbot}
+                className="text-white hover:text-gray-200 text-2xl"
+              >
+                <X />
+              </button>
+            </div>
           </div>
 
           {/* Body */}
-          <div className="p-4 h-60 overflow-y-auto flex flex-col gap-2">
+          <div className={`p-4 ${isFullScreen ? "h-[calc(100%-8rem)]" : "h-60"} overflow-y-auto flex flex-col gap-2`}>
             {messages.map((message, index) => (
               <div
                 key={index}

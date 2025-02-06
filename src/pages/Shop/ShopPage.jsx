@@ -1,17 +1,18 @@
-import { Grid, List } from "lucide-react";
+import { Grid, List, X } from "lucide-react";
 import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import HoverAction from "../../components/product/HoverAction";
-import { Pagination } from "../../components/product/Pagination";
 import { getCategoryProducts } from "../../features/categoryProduct/categoryProductSlice";
 import { getProducts } from "../../features/product/productSlice";
 import formatCurrency from "../../utils/formatMoney";
-
+const MIN_PRICE = 0;
+const MAX_PRICE = 10000000;
 const ShopPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const limit = 9;
+  const [priceRange, setPriceRange] = useState([MIN_PRICE, MAX_PRICE]);
 
   const dispatch = useDispatch();
   const [view, setView] = React.useState("grid");
@@ -20,93 +21,218 @@ const ShopPage = () => {
     (state) => state.products
   );
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(getCategoryProducts());
+    dispatch(
+      getCategoryProducts({
+        page: 1,
+        limit: 100,
+      })
+    );
   }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(getProducts({ page: currentPage }));
-  }, [dispatch, currentPage]);
-
+  const [sortBy, setSortBy] = useState("alphabetically");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+console.log("build with vite");
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const category = queryParams.get("category");
     if (category) {
-      setSelectedCategories([category]);
+       setSelectedCategories([decodeURIComponent(category)]);
+       dispatch(
+          getProducts({
+            page: 1,
+            limit,
+            minPrice: priceRange[0],
+            maxPrice: priceRange[1],
+            categories: [decodeURIComponent(category)],
+            sortBy,
+          })
+        );
     }
   }, [location.search]);
 
-  const [sortBy, setSortBy] = useState("alphabetically");
-  const [priceRange, setPriceRange] = useState([0, 10000000]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-
   useEffect(() => {
-    let filtered = products.filter(
-      (product) =>
-        (selectedCategories.length === 0 ||
-          product.categories.some((category) =>
-            selectedCategories.includes(category.slug)
-          )) &&
-        product.price >= priceRange[0] &&
-        product.price <= priceRange[1]
+    console.log("cate: " +selectedCategories);
+    dispatch(
+      getProducts({
+        page: currentPage,
+        limit,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+        categories: selectedCategories,
+        sortBy,
+      })
     );
-
-    switch (sortBy) {
-      case "price-asc":
-        filtered = filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        filtered = filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "name-asc":
-        filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "name-desc":
-        filtered = filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case "newest":
-        filtered = filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        break;
-      default:
-        break;
-    }
-
-    setFilteredProducts(filtered);
-  }, [products, selectedCategories, priceRange, sortBy]);
+  }, [dispatch, currentPage, priceRange, selectedCategories, sortBy]);
 
   const handleCategoryChange = (category) => {
-    console.log(category);
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((cat) => cat !== category)
-        : [...prev, category]
+    const newSelectedCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter((cat) => cat !== category)
+      : [...selectedCategories, category];
+    setSelectedCategories(newSelectedCategories);
+    setCurrentPage(1);
+    const queryParams = new URLSearchParams(location.search);
+    if (newSelectedCategories.length > 0) {
+      queryParams.delete("category");
+    }
+    navigate({ search: queryParams.toString() }, { replace: true });
+    dispatch(
+      getProducts({
+        page: 1,
+        limit,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+        categories: newSelectedCategories,
+        sortBy,
+      })
+    );
+  };
+
+  const handlePriceRangeChange = (range) => {
+    setPriceRange(range);
+    setCurrentPage(1);
+    dispatch(
+      getProducts({
+        page: 1,
+        limit,
+        minPrice: range[0],
+        maxPrice: range[1],
+        categories: selectedCategories,
+        sortBy,
+      })
+    );
+  };
+
+  const handleSortChange = (sort) => {
+    setSortBy(sort);
+    setCurrentPage(1);
+    dispatch(
+      getProducts({
+        page: 1,
+        limit,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+        categories: selectedCategories,
+        sortBy: sort,
+      })
+    );
+  };
+
+  const handleClearFilters = () => {
+    setSelectedCategories([]);
+    setPriceRange([MIN_PRICE, MAX_PRICE]);
+    setSortBy("alphabetically");
+    setCurrentPage(1);
+    dispatch(
+      getProducts({
+        page: 1,
+        limit,
+        minPrice: MIN_PRICE,
+        maxPrice: MAX_PRICE,
+        categories: [],
+        sortBy: "alphabetically",
+      })
+    );
+  };
+
+  const renderPagination = () => {
+    const pageNumbers = [];
+
+    // Add first 3 pages
+    for (let i = 1; i <= Math.min(3, pages); i++) {
+      pageNumbers.push(i);
+    }
+
+    // Add ellipsis if current page is beyond 3
+    if (currentPage > 3) {
+      pageNumbers.push("...");
+    }
+
+    // Add current page and next 2 pages
+    const startCurrent = Math.max(currentPage, 4);
+    const endCurrent = Math.min(currentPage + 2, pages);
+    for (let i = startCurrent; i <= endCurrent; i++) {
+      if (!pageNumbers.includes(i)) {
+        pageNumbers.push(i);
+      }
+    }
+
+    // Add ellipsis if there are more pages at the end
+    if (endCurrent < pages - 3) {
+      pageNumbers.push("...");
+    }
+
+    // Add last 3 pages
+    const lastStart = Math.max(pages - 2, endCurrent + 1);
+    for (let i = lastStart; i <= pages; i++) {
+      if (!pageNumbers.includes(i)) {
+        pageNumbers.push(i);
+      }
+    }
+
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <button
+          className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        {pageNumbers.map((page, index) => {
+          if (page === "...") {
+            return (
+              <span key={`ellipsis-${index}`} className="px-3 py-1">
+                ...
+              </span>
+            );
+          }
+          return (
+            <button
+              key={page}
+              className={`px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 ${
+                currentPage === page ? "bg-gray-300" : ""
+              }`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          );
+        })}
+        <button
+          className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === pages}
+        >
+          Next
+        </button>
+      </div>
     );
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header với breadcrumb và dropdown sắp xếp */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold mb-4">Filter</h2>
+      <div className="flex  flex-row justify-between items-center mb-6 flex-wrap">
+        <div className="flex items-center gap-2 mb-4 md:mb-0 text-center">
+          <h2 className="text-lg font-semibold">Filter</h2>
         </div>
 
-        <div className="mb-8 hidden items-center justify-between lg:flex">
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-4">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => handleSortChange(e.target.value)}
               className="rounded-lg border bg-white px-4 py-2"
             >
-              <option value="featured">Featured</option>
               <option value="newest">Newest</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="name-asc">Name: A to Z</option>
               <option value="name-desc">Name: Z to A</option>
-            </select>{" "}
+            </select>
             <div className="flex gap-2">
               <button
                 onClick={() => setView("grid")}
@@ -136,12 +262,21 @@ const ShopPage = () => {
       </div>
 
       {/* Grid chính */}
-      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-16">
         {/* Sidebar */}
-        <aside className="space-y-8">
+        <aside className="md:w-[240px] space-y-8 md:sticky md:top-8 md:self-start md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
           {/* Danh mục sản phẩm */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">CATEGORIES</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold mb-4">CATEGORIES</h2>
+              {(selectedCategories.length > 0 ||
+                priceRange[0] !== MIN_PRICE ||
+                priceRange[1] !== MAX_PRICE) && (
+                <button onClick={handleClearFilters} className="mb-4 text-sm">
+                  <X className="h-4 w-4 inline-block" />
+                </button>
+              )}
+            </div>
             <ul className="space-y-2">
               {categoryProducts.map((category, index) => (
                 <li key={index}>
@@ -163,14 +298,16 @@ const ShopPage = () => {
           </div>
 
           {/* Bộ lọc khoảng giá */}
-          <div>
+          <div className="mx-2">
             <h2 className="text-lg font-semibold mb-4">PRICE RANGE</h2>
             <Slider
+              // key={minPrice + "-" + maxPrice} // Add key to force re-render
               range
-              min={0}
-              max={10000000}
+              key={`${priceRange[0]}-${priceRange[1]}`}
+              min={MIN_PRICE}
+              max={MAX_PRICE}
               defaultValue={priceRange}
-              onChange={(value) => setPriceRange(value)}
+              onChangeComplete={handlePriceRangeChange}
               className="mt-4"
             />
             <div className="flex justify-between mt-2">
@@ -182,8 +319,8 @@ const ShopPage = () => {
 
         {/* Grid sản phẩm */}
         <main className="">
-          <div className="min-h-screen">
-            {filteredProducts.length === 0 ? (
+          <div className="min-h-screen mb-8">
+            {products.length === 0 ? (
               <p className="text-center text-gray-500">No products available</p>
             ) : (
               <div
@@ -193,7 +330,7 @@ const ShopPage = () => {
                     : "flex flex-col gap-6"
                 }`}
               >
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <Link to={`/shop/${product.slug}`} key={product.product_id}>
                     <div
                       className={`group relative ${
@@ -210,7 +347,7 @@ const ShopPage = () => {
                           src={
                             import.meta.env.VITE_API_URL +
                               "/" +
-                              product.images[0].url || "/placeholder.svg"
+                              product?.images[0]?.url || "/placeholder.svg"
                           }
                           alt={product.name}
                           crossOrigin="anonymous"
@@ -222,7 +359,7 @@ const ShopPage = () => {
                               NEW
                             </div>
                           )}
-                          {product.discount && (
+                          {product.discount && product.discount > 0 && (
                             <div className="rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
                               -{product.discount}%
                             </div>
@@ -240,16 +377,14 @@ const ShopPage = () => {
                         <p className="text-sm text-gray-500">
                           {product.category}
                         </p>
-                        <h3 className="text-sm font-medium">
-                          {product.name}
-                        </h3>
+                        <h3 className="text-sm font-medium">{product.name}</h3>
                         <div className="flex items-center gap-2">
                           <p className="font-semibold">
                             {formatCurrency(
                               (product.price * (100 - product.discount)) / 100
                             )}
                           </p>
-                          {product.discount && (
+                          {product.discount && product.discount > 0 && (
                             <p className="text-sm text-gray-500 line-through">
                               {formatCurrency(product.price)}
                             </p>
@@ -260,13 +395,10 @@ const ShopPage = () => {
                   </Link>
                 ))}
               </div>
-            )}{" "}
+            )}
           </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={pages}
-            onPageChange={setCurrentPage}
-          />{" "}
+
+          {renderPagination()}
         </main>
       </div>
     </div>

@@ -10,7 +10,6 @@ const ForgotPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically call an API to send the reset email
     setIsSubmitted(true);
   };
   return (
@@ -72,7 +71,7 @@ const ForgotPasswordPage = () => {
                 </p>
                 <Button
                   onClick={() => setIsSubmitted(false)}
-                  className="w-full bg-gray-900 text-white hover:bg-gray-800"
+                  className="w-full rounded-lg bg-black py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-900"
                 >
                   Back to Forgot Password
                 </Button>

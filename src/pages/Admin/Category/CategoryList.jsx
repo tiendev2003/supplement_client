@@ -16,15 +16,14 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import axiosInstance from "../../../api/axiosConfig";
 import {
   deleteCategoryProduct,
   getCategoryProducts,
 } from "../../../features/categoryProduct/categoryProductSlice";
 
-
 const CategoryList = () => {
-
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const { categoryProducts = [], loading } = useSelector(
     (state) => state.categoryProducts
   );
@@ -35,10 +34,15 @@ const CategoryList = () => {
   const totalPages = Math.ceil(categoryProducts.length / 10);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
-
+  const limit = 10;
   useEffect(() => {
-    dispatch(getCategoryProducts());
-  }, [dispatch]);
+    dispatch(
+      getCategoryProducts({
+        page: currentPage,
+        limit,
+      })
+    );
+  }, [currentPage, dispatch]);
 
   const toggleSelectAll = () => {
     if (selectedCategories.length === categoryProducts.length) {
@@ -100,7 +104,10 @@ const CategoryList = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      await dispatch(getCategoryProducts()).unwrap();
+      await dispatch(getCategoryProducts({
+        page: currentPage,
+        limit,
+      })).unwrap();
     }
     closeDeleteDialog();
   };
@@ -108,7 +115,7 @@ const CategoryList = () => {
   const handleImport = (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: "array" });
       const sheetName = workbook.SheetNames[0];
@@ -116,6 +123,17 @@ const CategoryList = () => {
       const json = XLSX.utils.sheet_to_json(worksheet);
       console.log(json);
       // Process the imported data as needed
+      try {
+        await axiosInstance.post("/category-products/bulk", json);
+        toast.success("Categories imported successfully");
+        dispatch(getCategoryProducts({
+          page: currentPage,
+          limit,
+        }));
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to import categories");
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -413,5 +431,5 @@ const CategoryList = () => {
       </Transition>
     </div>
   );
-}
+};
 export default CategoryList;
