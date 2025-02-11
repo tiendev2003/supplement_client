@@ -14,8 +14,8 @@ const DetailOrderPage = () => {
   const statusSteps = [
     { id: "01", name: "Order received", status: "received" },
     { id: "02", name: "Pending", status: "Pending" },
-    { id: "03", name: "Completed", status: "Completed" },
-    { id: "04", name: "Paid", status: "Paid" },
+    { id: "03", name: "Paid", status: "Paid" },
+    { id: "04", name: "Completed", status: "Completed" },
     { id: "05", name: "Cancelled", status: "Cancelled" },
   ];
   useEffect(() => {
@@ -179,7 +179,7 @@ const DetailOrderPage = () => {
                     <span className="text-gray-500 text-sm">
                       PAYMENT METHOD:
                     </span>
-                    <span className="font-medium">{order.payment}</span>
+                    <span className="font-medium">{order.payment?.payment_method.toUpperCase()}</span>
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center mb-2">

@@ -72,7 +72,6 @@ function App() {
               <Route path="/search" element={<ImageSearchResult />} />
               <Route path="/shop/:slug" element={<SingleProductPage />} />
               <Route path="/contact" element={<ContactPage />} />
-
               <Route element={<ProtectedRoute />}>
                 <Route path="/account" element={<LayoutProfile />}>
                   <Route path="" element={<AccountPage />} />

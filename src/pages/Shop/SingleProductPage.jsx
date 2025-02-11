@@ -43,20 +43,6 @@ const SingleProductPage = () => {
   });
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const sliderRef = useRef(null);
-  const [zoomStyle, setZoomStyle] = useState({});
-
-  const handleMouseMove = (e) => {
-    const { left, top, width, height } = e.target.getBoundingClientRect();
-    const x = ((e.pageX - left) / width) * 100;
-    const y = ((e.pageY - top) / height) * 100;
-    setZoomStyle({
-      backgroundPosition: `${x}% ${y}%`,
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setZoomStyle({});
-  };
 
   useEffect(() => {
     dispatch(fetchProductBySlug(slug));
@@ -125,7 +111,10 @@ const SingleProductPage = () => {
     if (sliderRef.current) {
       const slideWidth = sliderRef.current.children[0].offsetWidth;
       sliderRef.current.scrollTo({
-        left: (selectedImageIndex - 1) * slideWidth - sliderRef.current.offsetWidth / 2 + slideWidth / 2,
+        left:
+          (selectedImageIndex - 1) * slideWidth -
+          sliderRef.current.offsetWidth / 2 +
+          slideWidth / 2,
         behavior: "smooth",
       });
     }
@@ -138,7 +127,10 @@ const SingleProductPage = () => {
     if (sliderRef.current) {
       const slideWidth = sliderRef.current.children[0].offsetWidth;
       sliderRef.current.scrollTo({
-        left: (selectedImageIndex + 1) * slideWidth - sliderRef.current.offsetWidth / 2 + slideWidth / 2,
+        left:
+          (selectedImageIndex + 1) * slideWidth -
+          sliderRef.current.offsetWidth / 2 +
+          slideWidth / 2,
         behavior: "smooth",
       });
     }
@@ -170,18 +162,20 @@ const SingleProductPage = () => {
 
                 <div className="relative overflow-hidden rounded-lg h-[600px]">
                   {product.images.map((image, index) => (
-                     <div 
-                     key={index}
-                     className={` relative overflow-hidden rounded-lg `}
-                     >
-                     <ImageMagnifier
-                       src={
-                         import.meta.env.VITE_API_URL + "/" + product.images[selectedImageIndex].url ||
-                         "/placeholder.svg"
-                       }
-                       alt="Tray Table"
-                     />
-                   </div>
+                    <div
+                      key={index}
+                      className={` relative overflow-hidden rounded-lg `}
+                    >
+                      <ImageMagnifier
+                        src={
+                          import.meta.env.VITE_API_URL +
+                            "/" +
+                            product.images[selectedImageIndex].url ||
+                          "/placeholder.svg"
+                        }
+                        alt="Tray Table"
+                      />
+                    </div>
                   ))}
                 </div>
                 <button

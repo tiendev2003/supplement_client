@@ -32,7 +32,7 @@ const HeroSlide = () => {
                 "/placeholder.svg"
               }
               alt={slide.title}
-              crossOrigin="anonymous"
+              // crossOrigin="anonymous"
               className="object-cover  w-full h-full"
               loading="lazy"
             />

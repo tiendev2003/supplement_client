@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 * {
   margin: 0;
@@ -16,7 +16,7 @@ img {
 }
 @font-face {
   font-family: Roboto;
-  src: url("https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800&display=swap") format("truetype");
+  src: url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap") format("truetype");
   font-style: italic;
   font-weight: bold;
   font-display: swap;

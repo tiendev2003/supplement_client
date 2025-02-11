@@ -13,7 +13,7 @@ export const getProducts = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
@@ -25,7 +25,7 @@ export const fetchProductById = createAsyncThunk(
       const response = await axiosInstance.get(`/products/${id}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
@@ -42,7 +42,7 @@ export const addProduct = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
@@ -55,7 +55,7 @@ export const fetchProductBySlug = createAsyncThunk(
       console.log(response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
@@ -75,7 +75,7 @@ export const updateProduct = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
@@ -87,7 +87,7 @@ export const deleteProduct = createAsyncThunk(
       const response = await axiosInstance.delete(`/products/${id}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );
@@ -101,7 +101,7 @@ export const filterProducts = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response ? error.response.data : error.message);
     }
   }
 );

@@ -17,7 +17,7 @@ const Header = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const { cartItems ,  flyingItem} = useSelector((state) => state.cart);
+  const { cartItems, flyingItem } = useSelector((state) => state.cart);
   // automatically authenticate user if token is found
   const { data, isFetching } = useGetUserDetailsQuery("userDetails", {
     pollingInterval: 900000, // 15mins
@@ -51,7 +51,7 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
-   const cartIconRef = useRef(null);
+  const cartIconRef = useRef(null);
   const [cartPosition, setCartPosition] = useState({ x: 0, y: 0 });
 
   // Cập nhật vị trí icon giỏ hàng khi thay đổi kích thước màn hình
@@ -59,9 +59,9 @@ const Header = () => {
     const updateCartPosition = () => {
       if (cartIconRef.current) {
         const rect = cartIconRef.current.getBoundingClientRect();
-         setCartPosition({
-          x: rect.left ,
-          y: rect.top  -100,
+        setCartPosition({
+          x: rect.left,
+          y: rect.top - 100,
         });
       }
     };
@@ -99,13 +99,33 @@ const Header = () => {
                   Home
                 </Link>
               </li>
-              <li>
+              <li className="relative group">
                 <Link
                   to="/shop"
                   className="transition-colors hover:text-gray-600"
                 >
                   Shop
                 </Link>
+                <div className="absolute left-0 hidden mt-2 bg-white shadow-lg group-hover:block group-hover:delay-150">
+                  <ul className="py-2">
+                    <li>
+                      <Link
+                        to="/shop/category1"
+                        className="block px-4 py-2 hover:bg-gray-100"
+                      >
+                        Category 1
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/shop/category2"
+                        className="block px-4 py-2 hover:bg-gray-100"
+                      >
+                        Category 2
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </li>
               <li>
                 <Link
@@ -153,7 +173,7 @@ const Header = () => {
       </div>
       {flyingItem && (
         <motion.img
-          src={ import.meta.env.VITE_API_URL +"/"+ flyingItem.image}
+          src={import.meta.env.VITE_API_URL + "/" + flyingItem.image}
           alt="Flying Item"
           crossOrigin="anonymous"
           initial={{
