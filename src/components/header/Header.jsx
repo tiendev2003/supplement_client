@@ -9,23 +9,29 @@ import { setCredentials } from "../../features/user/userSlice";
 import { CartSidebar } from "./CartSidebar";
 import { ExpandableSearch } from "./ExpandableSearch";
 import { MobileMenu } from "./MobileMenu";
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const dropdownTimeoutRef = useRef(null);
+
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { cartItems, flyingItem } = useSelector((state) => state.cart);
-  // automatically authenticate user if token is found
-  const { data, isFetching } = useGetUserDetailsQuery("userDetails", {
+
+  const { data } = useGetUserDetailsQuery("userDetails", {
     pollingInterval: 900000, // 15mins
   });
 
   useEffect(() => {
     if (data) dispatch(setCredentials(data));
   }, [data, dispatch]);
+
   useEffect(() => {
     if (userInfo) {
       dispatch(getCart());
@@ -35,7 +41,6 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY) {
         if (currentScrollY > 100) {
           setIsVisible(false);
@@ -43,7 +48,6 @@ const Header = () => {
       } else {
         setIsVisible(true);
       }
-
       setIsScrolled(currentScrollY > 0);
       setLastScrollY(currentScrollY);
     };
@@ -51,10 +55,10 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
   const cartIconRef = useRef(null);
   const [cartPosition, setCartPosition] = useState({ x: 0, y: 0 });
 
-  // Cập nhật vị trí icon giỏ hàng khi thay đổi kích thước màn hình
   useEffect(() => {
     const updateCartPosition = () => {
       if (cartIconRef.current) {
@@ -67,9 +71,21 @@ const Header = () => {
     };
     updateCartPosition();
     window.addEventListener("resize", updateCartPosition);
-
     return () => window.removeEventListener("resize", updateCartPosition);
   }, []);
+
+  const handleDropdownEnter = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+    setIsDropdownOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 200); // Add a small delay before closing
+  };
 
   return (
     <header
@@ -99,48 +115,58 @@ const Header = () => {
                   Home
                 </Link>
               </li>
-              <li className="relative group">
-                <Link
-                  to="/shop"
-                  className="transition-colors hover:text-gray-600"
-                >
-                  Shop
+              <li>
+                <Link to="/shop" className="transition-colors hover:text-gray-600">
+                  Products
                 </Link>
-                <div className="absolute left-0 hidden mt-2 bg-white shadow-lg group-hover:block group-hover:delay-150">
-                  <ul className="py-2">
+              </li>
+              <li 
+                className="relative"
+                onMouseEnter={handleDropdownEnter}
+                onMouseLeave={handleDropdownLeave}
+                ref={dropdownRef}
+              >
+                <Link to="/consultants" className="transition-colors hover:text-gray-600">
+                  Professional Consulting
+                </Link>
+                <motion.div
+                  className="absolute left-0 mt-2 bg-white shadow-lg rounded-md overflow-hidden"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{
+                    opacity: isDropdownOpen ? 1 : 0,
+                    y: isDropdownOpen ? 0 : -10,
+                    pointerEvents: isDropdownOpen ? "auto" : "none",
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ul className="py-2 min-w-[200px]">
                     <li>
                       <Link
-                        to="/shop/category1"
-                        className="block px-4 py-2 hover:bg-gray-100"
+                        to="/consultants/consultant"
+                        className="block px-4 py-2 hover:bg-gray-100 transition-colors"
                       >
-                        Category 1
+                        Professional Consultants
                       </Link>
                     </li>
                     <li>
                       <Link
-                        to="/shop/category2"
-                        className="block px-4 py-2 hover:bg-gray-100"
+                        to="/consultants/booking"
+                        className="block px-4 py-2 hover:bg-gray-100 transition-colors"
                       >
-                        Category 2
+                        Book Appointment
                       </Link>
                     </li>
                   </ul>
-                </div>
+                </motion.div>
               </li>
               <li>
-                <Link
-                  to="/blog"
-                  className="transition-colors hover:text-gray-600"
-                >
+                <Link to="/blog" className="transition-colors hover:text-gray-600">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/contact"
-                  className="transition-colors hover:text-gray-600"
-                >
-                  Contact Us
+                <Link to="/contact" className="transition-colors hover:text-gray-600">
+                  Contact
                 </Link>
               </li>
             </ul>
@@ -148,7 +174,6 @@ const Header = () => {
 
           <div className="flex items-center gap-4">
             <ExpandableSearch />
-
             <Link
               to={userInfo ? "/account" : "/signin"}
               className="transition-colors hover:text-gray-600"
@@ -163,7 +188,6 @@ const Header = () => {
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingBag className="h-5 w-5" />
-
               <span className="absolute top-0 z-[100000] right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
                 {cartItems.length ?? 0}
               </span>
@@ -171,6 +195,7 @@ const Header = () => {
           </div>
         </div>
       </div>
+
       {flyingItem && (
         <motion.img
           src={import.meta.env.VITE_API_URL + "/" + flyingItem.image}
@@ -192,6 +217,7 @@ const Header = () => {
           className="fixed w-16 h-16 z-50 rounded-2xl"
         />
       )}
+
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

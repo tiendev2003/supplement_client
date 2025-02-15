@@ -2,6 +2,9 @@ import React, { Suspense, lazy } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import GlobalLoading from "./components/GlobalLoading/GlobalLoading";
 import { ChatProvider } from "./context/ChatContext";
+import BookingPage from "./pages/Booking/BookingPage";
+import ConsultantMenu from "./pages/Consultants/ConsultantMenu";
+import ConsultantPage from "./pages/Consultants/ConsultantPage";
 import ProtectedRoute from "./routing/ProtectedRoute";
 
 const Layout = lazy(() => import("./layouts"));
@@ -69,6 +72,9 @@ function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/shop" element={<ShopPage />} />
+              <Route path="/consultants" element={<ConsultantMenu />} />
+              <Route path="/consultants/consultant" element={<ConsultantPage />} />
+              <Route path="/consultants/booking" element={<BookingPage />} />
               <Route path="/search" element={<ImageSearchResult />} />
               <Route path="/shop/:slug" element={<SingleProductPage />} />
               <Route path="/contact" element={<ContactPage />} />
