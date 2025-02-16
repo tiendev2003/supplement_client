@@ -20,11 +20,13 @@ import formatDate from "../../utils/formatDate";
 import formatCurrency from "../../utils/formatMoney";
 
 const tabs = [
-  "Additional Info",
   "Description",
   "Ingredients",
-  "Nutrition Facts",
-  "Benefits",
+  "Adverse Effects",
+  "Dosage",
+  "Usage",
+  "Careful",
+  "Preservation",
   "Reviews",
 ];
 
@@ -112,7 +114,7 @@ const SingleProductPage = () => {
       const slideWidth = sliderRef.current.children[0].offsetWidth;
       sliderRef.current.scrollTo({
         left:
-          (selectedImageIndex - 1) * slideWidth -
+          (selectedImageIndex - 1) * slideWidth - 
           sliderRef.current.offsetWidth / 2 +
           slideWidth / 2,
         behavior: "smooth",
@@ -128,13 +130,15 @@ const SingleProductPage = () => {
       const slideWidth = sliderRef.current.children[0].offsetWidth;
       sliderRef.current.scrollTo({
         left:
-          (selectedImageIndex + 1) * slideWidth -
+          (selectedImageIndex + 1) * slideWidth - 
           sliderRef.current.offsetWidth / 2 +
           slideWidth / 2,
         behavior: "smooth",
       });
     }
   };
+  // in ra type của product?.ingredients
+  console.log(product?.ingredients);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -238,7 +242,8 @@ const SingleProductPage = () => {
                   </span>
                 </div>
                 <h1 className="text-3xl font-bold">{product.name}</h1>
-                <p className="text-gray-600">{product.description}</p>
+
+                {/* <p className="text-gray-600">{}</p> */}
               </div>
 
               <div className="flex items-baseline gap-4">
@@ -269,8 +274,16 @@ const SingleProductPage = () => {
                   <span>{product.origin}</span>
                 </div>
                 <div className="flex gap-2">
-                  <span>Certifications:</span>
-                  <span>{product.certifications}</span>
+                  <span>Expiry Date:</span>
+                  <span>
+                    {new Date(product.expiryDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <span>Manufacturing Date:</span>
+                  <span>
+                    {new Date(product.manufacturingDate).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
 
@@ -305,7 +318,7 @@ const SingleProductPage = () => {
           {/* Additional Info Tabs */}
           <div className="container mx-auto px-4 py-8">
             <TabGroup>
-              <TabList className="flex border-b">
+              <TabList className="flex border-b flex-wrap">
                 {tabs.map((tab) => (
                   <Tab
                     key={tab}
@@ -325,61 +338,80 @@ const SingleProductPage = () => {
               <TabPanels>
                 <TabPanel>
                   <div className="pt-6">
-                    <h2 className="text-xl font-semibold">
-                      Additional Information
-                    </h2>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                      <div>
-                        <span className="font-medium">Expiry Date:</span>{" "}
-                        {new Date(product.expiryDate).toLocaleDateString()}
-                      </div>
-                      <div>
-                        <span className="font-medium">Manufacturing Date:</span>{" "}
-                        {new Date(
-                          product.manufacturingDate
-                        ).toLocaleDateString()}
-                      </div>
-                      <div>
-                        <span className="font-medium">
-                          Storage Instructions:
-                        </span>{" "}
-                        {product.storageInstructions}
-                      </div>
-                      <div>
-                        <span className="font-medium">Usage Instructions:</span>{" "}
-                        {product.usageInstructions}
-                      </div>
-                      <div>
-                        <span className="font-medium">Contraindications:</span>{" "}
-                        {product.contraindications}
-                      </div>
+                    <p
+                      className="text-gray-600"
+                      dangerouslySetInnerHTML={{
+                        __html: product.description,
+                      }}
+                    ></p>
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <div className="pt-6">
+                    {/*  hiển thị table  */}
+                    <div className="    overflow-hidden dark:bg-[#081028] dark:border-gray-700">
+                      <table className="w-full mt-4 border-collapse">
+                        <thead>
+                          <tr className="border-b border-gray-300 dark:border-gray-700">
+                            <th className="border border-gray-300">
+                              Ingredient
+                            </th>
+                            <th className="border border-gray-300">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {JSON.parse(product.ingredients).map(
+                            (ingredient, index) => {
+                              console.log(ingredient);
+                              return (
+                                <tr
+                                  key={index}
+                                  className="border-b border-gray-300 dark:border-gray-700"
+                                >
+                                  <td className="px-3 py-2 border border-gray-300">
+                                    {ingredient.ingredient}
+                                  </td>
+                                  <td className="px-3 py-2 border border-gray-300">
+                                    {ingredient.amount}
+                                  </td>
+                                </tr>
+                              );
+                            }
+                          )}
+                          {/* {product.ingredients} */}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </TabPanel>
                 <TabPanel>
                   <div className="pt-6">
-                    <h2 className="text-xl font-semibold">Description</h2>
-                    <p className="text-gray-600">{product.description}</p>
+                    <h2 className="text-xl font-semibold">Adverse Effects</h2>
+                    <p className="text-gray-600">{product.adverseeffect}</p>
                   </div>
                 </TabPanel>
                 <TabPanel>
                   <div className="pt-6">
-                    <h2 className="text-xl font-semibold">Ingredients</h2>
-                    <p className="text-gray-600">{product.ingredients}</p>
+                    <h2 className="text-xl font-semibold">Dosage</h2>
+                    <p className="text-gray-600">{product.dosage}</p>
                   </div>
                 </TabPanel>
                 <TabPanel>
                   <div className="pt-6">
-                    <h2 className="text-xl font-semibold">Nutrition Facts</h2>
-                    <div className="text-gray-600">
-                      {product.nutritionFacts}
-                    </div>
+                    <h2 className="text-xl font-semibold">Usage</h2>
+                    <p className="text-gray-600">{product.usage}</p>
                   </div>
                 </TabPanel>
                 <TabPanel>
                   <div className="pt-6">
-                    <h2 className="text-xl font-semibold">Benefits</h2>
-                    <p className="text-gray-600">{product.benefits}</p>
+                    <h2 className="text-xl font-semibold">Careful</h2>
+                    <p className="text-gray-600">{product.careful}</p>
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <div className="pt-6">
+                    <h2 className="text-xl font-semibold">Preservation</h2>
+                    <p className="text-gray-600">{product.preservation}</p>
                   </div>
                 </TabPanel>
                 <TabPanel className="pt-6">
