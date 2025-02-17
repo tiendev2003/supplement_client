@@ -264,9 +264,9 @@ console.log("build with vite");
       {/* Grid chính */}
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-16">
         {/* Sidebar */}
-        <aside className="md:w-[240px] space-y-8 md:sticky md:top-8 md:self-start md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
+        <aside className="md:w-[240px] space-y-8 md:sticky md:top-8 md:self-start md:max-h-[calc(100vh-2rem)] md:overflow-y-auto ">
           {/* Danh mục sản phẩm */}
-          <div>
+          <div className="">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold mb-4">CATEGORIES</h2>
               {(selectedCategories.length > 0 ||
@@ -277,7 +277,7 @@ console.log("build with vite");
                 </button>
               )}
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-2 mr-2">
               {categoryProducts.map((category, index) => (
                 <li key={index}>
                   <label className="flex cursor-pointer items-center gap-2">

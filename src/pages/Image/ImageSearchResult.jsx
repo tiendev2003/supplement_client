@@ -3,55 +3,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 
-const mockResults = [
-  {
-    id: 1,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 1",
-    title: "Beautiful Landscape",
-    link: "#",
-  },
-  {
-    id: 2,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 2",
-    title: "City Skyline",
-    link: "#",
-  },
-  {
-    id: 3,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 3",
-    title: "Mountain View",
-    link: "#",
-  },
-  {
-    id: 4,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 4",
-    title: "Serene Beach",
-    link: "#",
-  },
-  {
-    id: 5,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 5",
-    title: "Forest Path",
-    link: "#",
-  },
-  {
-    id: 6,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 6",
-    title: "Desert Sunset",
-    link: "#",
-  },
-  // Add more mock results as needed
-];
-
 const ImageSearchResult = () => {
   const { selectedImage, setSelectedImage } = useAppContext(); // Lấy ảnh từ context
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const savedImage = localStorage.getItem("selectedImage");
@@ -72,17 +27,25 @@ const ImageSearchResult = () => {
     try {
       const file = base64ToFile(imageBase64, "selectedImage.png");
       const formData = new FormData();
-      formData.append("image", file);
-
-      const response = await axios.post("http://localhost:5000/search", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setResults(response.data.images); // Cập nhật danh sách ảnh tương tự
+      formData.append("file", file);
+      setLoading(true);
+      const response = await axios.post(
+        "http://127.0.0.1:5000/search",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Kết quả tìm kiếm:", response.data);
+      setResults(response.data); // Cập nhật danh sách ảnh tương tự
     } catch (error) {
       console.error("Lỗi khi tìm kiếm:", error);
+    } finally {
+      setLoading(false);
     }
+
   };
 
   const base64ToFile = (base64, filename) => {
@@ -107,21 +70,22 @@ const ImageSearchResult = () => {
             className="mt-2 w-40 h-40 object-cover"
           />
         )}
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <h1 className="text-lg font-semibold mt-4">Ảnh tương tự</h1>
+        {loading && <p>Đang tìm kiếm...</p>}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-3">
           {results.map((result, index) => (
-            <Link to={result.link} className="group" key={index}>
+            <Link to={`/shop/${result.slug}`} className="group" key={index}>
               <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
                 <img
-                  src={result.src || "/placeholder.svg"}
-                  alt={result.alt}
+                  src={result.image_url || "/placeholder.svg"}
+                  alt={result.image_url}
                   width={300}
                   height={300}
                   className="object-cover w-full h-full group-hover:opacity-80 transition-opacity"
                 />
               </div>
               <p className="mt-2 text-sm text-gray-700 group-hover:underline">
-                {result.title}
+                {result.name}
               </p>
             </Link>
           ))}

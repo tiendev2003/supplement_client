@@ -307,40 +307,34 @@ const AddProduct = () => {
                   "Type ingredients here..."
                 )}
                 {renderFormField(
-                  "Certifications",
-                  "certifications",
+                  "Adverse Effects",
+                  "adverseeffect",
                   "textarea",
-                  "Type certifications here..."
+                  "Type adverse effects here..."
                 )}
                 {renderFormField(
-                  "Storage Instructions",
-                  "storageInstructions",
+                  "Dosage",
+                  "dosage",
                   "textarea",
-                  "Type storage instructions here..."
+                  "Type dosage here..."
                 )}
                 {renderFormField(
-                  "Usage Instructions",
-                  "usageInstructions",
+                  "Usage",
+                  "usage",
                   "textarea",
-                  "Type usage instructions here..."
+                  "Type usage here..."
                 )}
                 {renderFormField(
-                  "Contraindications",
-                  "contraindications",
+                  "Careful",
+                  "careful",
                   "textarea",
-                  "Type contraindications here..."
+                  "Type careful here..."
                 )}
                 {renderFormField(
-                  "Nutrition Facts",
-                  "nutritionFacts",
+                  "Preservation",
+                  "preservation",
                   "textarea",
-                  "Type nutrition facts here..."
-                )}
-                {renderFormField(
-                  "Benefits",
-                  "benefits",
-                  "textarea",
-                  "Type benefits here..."
+                  "Type preservation here..."
                 )}
               </div>
             </div>
