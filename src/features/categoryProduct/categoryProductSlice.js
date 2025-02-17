@@ -3,7 +3,7 @@ import axiosInstance from "../../api/axiosConfig";
 
 export const getCategoryProducts = createAsyncThunk(
   "categoryProduct/getCategoryProducts",
-  async ({ page = 1, limit = 12 }, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/category-products",{
         params: { page, limit },
@@ -75,6 +75,8 @@ const initialState = {
   loading: false,
   error: null,
   success: false,
+  total: 0,
+  pages : 0
 };
 
 const categoryProductSlice = createSlice({
@@ -95,6 +97,8 @@ const categoryProductSlice = createSlice({
     builder.addCase(getCategoryProducts.fulfilled, (state, { payload }) => {
       state.loading = false;
       state.categoryProducts = payload.data;
+      state.total = payload.total;
+      state.pages = payload.pages;
       state.error = null;
     });
     builder.addCase(getCategoryProducts.rejected, (state, { payload }) => {

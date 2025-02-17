@@ -24,69 +24,57 @@ import {
 
 const CategoryList = () => {
   const dispatch = useDispatch();
-  const { categoryProducts = [], loading } = useSelector(
+  const { categoryProducts = [], loading, total, pages } = useSelector(
     (state) => state.categoryProducts
   );
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const totalPages = Math.ceil(categoryProducts.length / 10);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
-  const limit = 10;
+  const [limit, setLimit] = useState(10);
+  const totalPages = pages;
+
   useEffect(() => {
-    dispatch(
-      getCategoryProducts({
-        page: currentPage,
-        limit,
-      })
-    );
-  }, [currentPage, dispatch]);
+    dispatch(getCategoryProducts({ page: currentPage, limit }));
+  }, [currentPage, dispatch, limit]);
 
   const toggleSelectAll = () => {
-    if (selectedCategories.length === categoryProducts.length) {
-      setSelectedCategories([]);
-    } else {
-      setSelectedCategories(categoryProducts.map((c) => c.id));
-    }
+    setSelectedCategories(
+      selectedCategories.length === categoryProducts.length
+        ? []
+        : categoryProducts.map((c) => c.id)
+    );
   };
 
   const navigate = useNavigate();
 
   const toggleSelect = (id) => {
-    if (selectedCategories.includes(id)) {
-      setSelectedCategories(selectedCategories.filter((c) => c !== id));
-    } else {
-      setSelectedCategories([...selectedCategories, id]);
-    }
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
   };
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
   };
 
   const sortedCategories = [...categoryProducts].sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key]) {
-      return sortConfig.direction === "asc" ? -1 : 1;
-    }
-    if (a[sortConfig.key] > b[sortConfig.key]) {
-      return sortConfig.direction === "asc" ? 1 : -1;
-    }
+    if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
+    if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
   });
 
   const openDeleteDialog = (category) => {
     setCategoryToDelete(category);
-    console.log(category);
     setIsDeleteDialogOpen(true);
   };
 
@@ -97,17 +85,12 @@ const CategoryList = () => {
 
   const confirmDelete = async () => {
     try {
-      await dispatch(
-        deleteCategoryProduct(categoryToDelete.category_id)
-      ).unwrap();
+      await dispatch(deleteCategoryProduct(categoryToDelete.category_id)).unwrap();
       toast.success("Category deleted successfully");
     } catch (error) {
       console.error(error);
     } finally {
-      await dispatch(getCategoryProducts({
-        page: currentPage,
-        limit,
-      })).unwrap();
+      await dispatch(getCategoryProducts({ page: currentPage, limit })).unwrap();
     }
     closeDeleteDialog();
   };
@@ -121,15 +104,10 @@ const CategoryList = () => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const json = XLSX.utils.sheet_to_json(worksheet);
-      console.log(json);
-      // Process the imported data as needed
       try {
         await axiosInstance.post("/category-products/bulk", json);
         toast.success("Categories imported successfully");
-        dispatch(getCategoryProducts({
-          page: currentPage,
-          limit,
-        }));
+        dispatch(getCategoryProducts({ page: currentPage, limit }));
       } catch (error) {
         console.error(error);
         toast.error("Failed to import categories");
@@ -143,6 +121,65 @@ const CategoryList = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Categories");
     XLSX.writeFile(workbook, "categories.xlsx");
+  };
+
+  const handleLimitChange = (event) => {
+    setLimit(Number(event.target.value));
+    setCurrentPage(1); // Reset to the first page when limit changes
+    dispatch(
+      getCategoryProducts({
+        page: 1,
+        limit: Number(event.target.value),
+      })
+    );
+  };
+
+  const renderPagination = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.min(3, totalPages); i++) pageNumbers.push(i);
+    if (currentPage > 3) pageNumbers.push("...");
+    for (let i = Math.max(currentPage, 4); i <= Math.min(currentPage + 2, totalPages); i++) {
+      if (!pageNumbers.includes(i)) pageNumbers.push(i);
+    }
+    if (Math.min(currentPage + 2, totalPages) < totalPages - 3) pageNumbers.push("...");
+    for (let i = Math.max(totalPages - 2, Math.min(currentPage + 2, totalPages) + 1); i <= totalPages; i++) {
+      if (!pageNumbers.includes(i)) pageNumbers.push(i);
+    }
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <button
+          className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        {pageNumbers.map((page, index) =>
+          page === "..." ? (
+            <span key={`ellipsis-${index}`} className="px-3 py-1">
+              ...
+            </span>
+          ) : (
+            <button
+              key={page}
+              className={`px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 ${
+                currentPage === page ? "bg-gray-300 dark:bg-gray-700" : ""
+              }`}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </button>
+          )
+        )}
+        <button
+          className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -227,9 +264,7 @@ const CategoryList = () => {
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 bg-gray-300 checked:bg-purple-600 dark:bg-gray-700 dark:border-gray-600"
-                      checked={
-                        selectedCategories.length === categoryProducts.length
-                      }
+                      checked={selectedCategories.length === categoryProducts.length}
                       onChange={toggleSelectAll}
                     />
                   </th>
@@ -257,11 +292,8 @@ const CategoryList = () => {
               <tbody>
                 {sortedCategories
                   .filter((category) =>
-                    category.name
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase())
+                    category.name.toLowerCase().includes(searchQuery.toLowerCase())
                   )
-                  .slice((currentPage - 1) * 10, currentPage * 10)
                   .map((category) => (
                     <tr
                       key={category.category_id}
@@ -306,9 +338,7 @@ const CategoryList = () => {
                           <button
                             className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
                             onClick={() =>
-                              navigate(
-                                `/admin/edit-category/${category.category_id}`
-                              )
+                              navigate(`/admin/edit-category/${category.category_id}`)
                             }
                           >
                             <Pencil className="w-4 h-4" />
@@ -328,40 +358,29 @@ const CategoryList = () => {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 flex items-center justify-between border-t border-gray-300 dark:border-gray-700">
+          <div className="py-4 flex flex-wrap items-center justify-between border-t border-gray-300 dark:border-gray-700 gap-3">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {currentPage * 10 - 9}-
-              {Math.min(currentPage * 10, categoryProducts.length)} of{" "}
-              {categoryProducts.length}
+              {currentPage * limit - limit + 1}-{Math.min(currentPage * limit, total)} of {total}
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
+            {renderPagination()}
+            <div className="flex flex-wrap items-center gap-2">
+              <label
+                htmlFor="limit"
+                className="text-sm text-gray-600 dark:text-gray-400"
               >
-                Previous
-              </button>
-              {[...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index}
-                  className={`px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 ${
-                    currentPage === index + 1
-                      ? "bg-gray-300 dark:bg-gray-700"
-                      : ""
-                  }`}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
-              <button
-                className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                Items per page:
+              </label>
+              <select
+                id="limit"
+                value={limit}
+                onChange={handleLimitChange}
+                className="rounded-lg border border-gray-300 bg-white py-2 px-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-[#081028] dark:text-white dark:border-gray-600"
               >
-                Next
-              </button>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
             </div>
           </div>
         </div>
@@ -402,8 +421,7 @@ const CategoryList = () => {
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Are you sure you want to delete the category "
-                      {categoryToDelete?.name}"? This action cannot be undone.
+                      Are you sure you want to delete the category "{categoryToDelete?.name}"? This action cannot be undone.
                     </p>
                   </div>
 
@@ -432,4 +450,5 @@ const CategoryList = () => {
     </div>
   );
 };
+
 export default CategoryList;
