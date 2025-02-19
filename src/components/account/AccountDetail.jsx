@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import PropTypes from "prop-types";
 
+AccountDetails.propTypes = {
+  user: PropTypes.shape({
+    full_name: PropTypes.string.isRequired,
+    email: PropTypes.string.isRequired,
+    phone: PropTypes.string,
+    displayName: PropTypes.string,
+    avatar: PropTypes.string,
+  }).isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onPasswordChange: PropTypes.func.isRequired,
+};
 export default function AccountDetails({ user, onSubmit, onPasswordChange }) {
   const [formData, setFormData] = useState({
     full_name: user.full_name,

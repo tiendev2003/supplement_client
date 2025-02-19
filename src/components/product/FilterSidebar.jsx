@@ -34,7 +34,7 @@ export function FilterSidebar({ isOpen, onClose, categories, loading, onCategory
                 <label className="flex cursor-pointer items-center gap-2">
                   <input type="radio" name="category" className="rounded border-gray-300" onChange={() => handleCategoryChange(category.slug)} />
                   <span className="flex-1">{category.name}</span>
-                  <span className="text-sm text-gray-500">({category.products.length})</span>
+                  <span className="text-sm text-gray-500">({category?.products?.length})</span>
                 </label>
               </li>
             ))}

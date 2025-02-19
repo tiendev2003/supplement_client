@@ -30,8 +30,8 @@ const Header = () => {
 
   useEffect(() => {
     if (data) dispatch(setCredentials(data));
-  }, [data, dispatch]);
-
+  }, [data, dispatch, userInfo]);
+ 
   useEffect(() => {
     if (userInfo) {
       dispatch(getCart());
@@ -116,17 +116,23 @@ const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/shop" className="transition-colors hover:text-gray-600">
+                <Link
+                  to="/shop"
+                  className="transition-colors hover:text-gray-600"
+                >
                   Products
                 </Link>
               </li>
-              <li 
+              <li
                 className="relative"
                 onMouseEnter={handleDropdownEnter}
                 onMouseLeave={handleDropdownLeave}
                 ref={dropdownRef}
               >
-                <Link to="/consultants" className="transition-colors hover:text-gray-600">
+                <Link
+                  to="/consultants"
+                  className="transition-colors hover:text-gray-600"
+                >
                   Professional Consulting
                 </Link>
                 <motion.div
@@ -160,12 +166,18 @@ const Header = () => {
                 </motion.div>
               </li>
               <li>
-                <Link to="/blog" className="transition-colors hover:text-gray-600">
+                <Link
+                  to="/blog"
+                  className="transition-colors hover:text-gray-600"
+                >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="transition-colors hover:text-gray-600">
+                <Link
+                  to="/contact"
+                  className="transition-colors hover:text-gray-600"
+                >
                   Contact
                 </Link>
               </li>

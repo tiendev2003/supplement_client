@@ -289,7 +289,7 @@ console.log("build with vite");
                     />
                     <span className="flex-1">{category.name}</span>
                     <span className="text-sm text-gray-500">
-                      ({category.products.length})
+                      ({category?.products?.length})
                     </span>
                   </label>
                 </li>

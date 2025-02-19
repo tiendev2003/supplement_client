@@ -185,7 +185,7 @@ const ProductList = () => {
       console.error(error);
       toast.error("Failed to delete selected products: " + error.message || error.error);
     } finally {
-      dispatch(getProducts());
+     
       setSelectedProducts([]);
     }
   };

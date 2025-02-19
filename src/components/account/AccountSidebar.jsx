@@ -35,6 +35,7 @@ export default function AccountSidebar() {
       console.error("Failed to logout: ", error);
     }
   };
+  console.log(userInfo)
 
   return (
     <aside className="rounded-lg bg-white p-6 shadow-sm md:col-span-3">
@@ -66,7 +67,7 @@ export default function AccountSidebar() {
             );
           })}
           {/*  nếu là admin thì có thêm đường dẫn đi qua admin */}
-          {userInfo.role === "user" && (
+          {userInfo.role === "admin" && (
             <li>
               <Link
                 to="/admin"
