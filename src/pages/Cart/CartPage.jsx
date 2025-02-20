@@ -19,7 +19,6 @@ import {
   removeFromCart,
   updateCart,
 } from "../../features/cart/cartSlice";
-import { addOrder } from "../../features/orders/orderSlice";
 import formatDate from "../../utils/formatDate";
 import formatCurrency from "../../utils/formatMoney";
 
@@ -29,7 +28,8 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const { cartItems, loadingCart } = useSelector((state) => state.cart);
- const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [totalAm, setTotalAm] = useState(0);
   useEffect(() => {
     if (userInfo) {
       dispatch(getCart());
@@ -40,18 +40,15 @@ const CartPage = () => {
     const query = new URLSearchParams(location.search);
     const stepQuery = parseInt(query.get("step"), 10);
 
-    // Validate step parameter
+    if (loadingCart) return; // Chờ dữ liệu cart load xong
+
     if (![1, 2, 3].includes(stepQuery)) {
-      const newStep = 1;
-      setStep(newStep);
-      query.set("step", newStep);
+      setStep(1);
+      query.set("step", "1");
       navigate({ search: query.toString() }, { replace: true });
-      return;
+    } else {
+      setStep(stepQuery);
     }
-
-    if (loadingCart) return; // Wait for cart data to load
-
-    setStep(stepQuery);
   }, [cartItems.length, loadingCart, location.search, navigate, userInfo]);
 
   const [shippingMethod, setShippingMethod] = useState("free");
@@ -105,6 +102,7 @@ const CartPage = () => {
   const handleSubmit = async (formData) => {
     try {
       setLoading(true);
+      setTotalAm(total);
       const orderData = await axiosInstance.post(
         "/orders",
         {
@@ -122,14 +120,14 @@ const CartPage = () => {
       if (formData.paymentMethod === "cod") {
         setLoading(false);
         toast.success("Order submitted successfully");
+        setStepWithQuery(3);
         dispatch(clearCartState());
-        setStep(3);
       }
       if (formData.paymentMethod === "credit-card") {
         setLoading(false);
         toast.success("Redirecting to payment gateway");
+        setStepWithQuery(3);
         dispatch(clearCartState());
-        setStep(3);
       }
       if (formData.paymentMethod === "momo") {
         try {
@@ -147,7 +145,6 @@ const CartPage = () => {
           );
           setLoading(false);
           window.open(response.data, "_blank");
-
         } catch (error) {
           setLoading(false);
           if (error.response?.status === 402) {
@@ -156,13 +153,13 @@ const CartPage = () => {
           toast.error(error.response.data.error || "Error submitting order");
           setTimeout(() => {
             dispatch(clearCartState());
-         }, 3000);
+          }, 3000);
         }
-       
+
         // Redirect to MoMo payment gateway
 
         setTimeout(() => {
-           dispatch(clearCartState());
+          dispatch(clearCartState());
         }, 3000);
       }
     } catch (error) {
@@ -174,72 +171,17 @@ const CartPage = () => {
     }
   };
 
-  const handleSubmit1 = async (formData) => {
-    try {
-      let orderData = {};
-      console.log(formData);
-      dispatch(
-        addOrder({
-          ...formData,
-          shipping: shippingCosts[shippingMethod],
-          method: shippingMethod,
-        })
-      )
-        .then(async (data) => {
-          orderData = data.payload.data;
-          setPaymentMethod(formData.paymentMethod);
-          if (formData.paymentMethod === "cod") {
-            toast.success("Order submitted successfully");
-            dispatch(clearCartState());
-            setStep(3);
-          }
-          if (formData.paymentMethod === "credit-card") {
-            toast.success("Redirecting to payment gateway");
-            dispatch(clearCartState());
-            setStep(3);
-          }
-          if (formData.paymentMethod === "momo") {
-            const response = await axiosInstance.post(
-              "/orders/payment-with-momo",
-              {
-                total: Number(total) + Number(shippingCosts[shippingMethod]),
-                orderId: orderData.order_id,
-              }
-            );
-            // Redirect to MoMo payment gateway
-            window.open(response.data, "_blank");
-
-            setTimeout(() => {
-              setStep(3);
-              dispatch(clearCartState());
-            }, 3000);
-          }
-        })
-        .catch((error) => {
-          if (error.response.status === 402) {
-            dispatch(clearCartState());
-          }
-          toast.error(error.message || "Error submitting order");
-        });
-    } catch (error) {
-      if (error.response?.status === 402) {
-        return;
-      }
-      toast.error(error.message || "Error submitting order");
-    }
-  };
-
   const setStepWithQuery = (newStep) => {
     if (newStep === 2 && (!userInfo || cartItems.length === 0)) {
       toast.error("Please login and ensure your cart is not empty to proceed.");
       return;
     }
-    setStep(newStep);
+
+    setStep(newStep); // Cập nhật state
     const query = new URLSearchParams(location.search);
     query.set("step", newStep);
-    navigate({ search: query.toString() });
+    navigate({ search: query.toString() }, { replace: true });
   };
-
   const handleBack = () => {
     if (step > 1) {
       setStepWithQuery(step - 1);
@@ -331,7 +273,7 @@ const CartPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total:</span>
-                  <span className="font-medium">{formatCurrency(total)}</span>
+                  <span className="font-medium">{formatCurrency(totalAm)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Payment method:</span>
