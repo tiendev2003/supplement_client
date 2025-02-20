@@ -36,6 +36,7 @@ export default function ImageUpload() {
               />
             </div>
             <button
+              type="button"
               onClick={removeImage}
               className="absolute -top-2 -right-2 bg-black rounded-full p-0.5"
             >

@@ -4,16 +4,34 @@ import axiosInstance from "../../api/axiosConfig";
 export const getProducts = createAsyncThunk(
   "product/getProducts",
   async (
-    { page = 1, limit = 12, search = "", minPrice, maxPrice, categories ,sortBy},
+    {
+      page = 1,
+      limit = 12,
+      search = "",
+      minPrice,
+      maxPrice,
+      categories,
+      sortBy,
+    },
     { rejectWithValue }
   ) => {
     try {
       const response = await axiosInstance.get(`/products`, {
-        params: { page, limit, search, minPrice, maxPrice, categorySlug: categories ,sort:sortBy},
+        params: {
+          page,
+          limit,
+          search,
+          minPrice,
+          maxPrice,
+          categorySlug: categories,
+          sort: sortBy,
+        },
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );
@@ -25,7 +43,9 @@ export const fetchProductById = createAsyncThunk(
       const response = await axiosInstance.get(`/products/${id}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );
@@ -42,7 +62,9 @@ export const addProduct = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );
@@ -55,7 +77,9 @@ export const fetchProductBySlug = createAsyncThunk(
       console.log(response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );
@@ -64,9 +88,11 @@ export const updateProduct = createAsyncThunk(
   "product/updateProduct",
   async (data, { rejectWithValue }) => {
     try {
+      console.log(data.formData.get("images")[0]);
       const response = await axiosInstance.put(
         `/products/${data.id}`,
         data.formData,
+
         {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -75,7 +101,9 @@ export const updateProduct = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );
@@ -87,7 +115,9 @@ export const deleteProduct = createAsyncThunk(
       const response = await axiosInstance.delete(`/products/${id}`);
       return id;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );
@@ -101,7 +131,9 @@ export const filterProducts = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response ? error.response.data : error.message);
+      return rejectWithValue(
+        error.response ? error.response.data : error.message
+      );
     }
   }
 );

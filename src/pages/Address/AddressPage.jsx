@@ -85,6 +85,8 @@ const AddressPage = () => {
                       Edit
                     </Link>
                     <button
+                                      type="button"
+
                       onClick={() => handleDelete(address.address_id)}
                       className="flex items-center text-sm text-red-500 hover:text-red-700"
                     >

@@ -498,6 +498,8 @@ const ProductList = () => {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
+                                          type="button"
+
                           className="p-2 hover:bg-gray-300 rounded-lg dark:hover:bg-gray-700"
                           onClick={() => openDeleteDialog(product)}
                         >

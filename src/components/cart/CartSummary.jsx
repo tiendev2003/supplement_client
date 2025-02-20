@@ -78,7 +78,8 @@ export default function CartSummary({
       </div>
 
       <button
-        onClick={onClick}
+        onClick={onClick}                  type="button"
+
         className="mt-6 w-full rounded-lg bg-black py-3 text-center text-sm font-semibold text-white hover:bg-gray-900"
       >
         Checkout

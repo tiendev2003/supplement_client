@@ -60,6 +60,8 @@ const HeroSlide = () => {
         {banners.map((_, index) => (
           <button
             key={index}
+            type="button"
+
             className={`h-2 w-2 rounded-full ${
               index === currentSlide ? "bg-black" : "bg-gray-300"
             }`}

@@ -47,7 +47,7 @@ const AddProduct = () => {
             setValue(key, value);
           }
         }
-        console.log(product.categories);
+        console.log(product.images);
         setValue("category_id", product.categories[0].category_id);
         setImages(product.images || []);
       });
@@ -77,7 +77,16 @@ const AddProduct = () => {
     Object.keys(data).forEach((key) => {
       formData.append(key, data[key]);
     });
-    images.forEach((file, index) => {
+
+    // Separate existing and new images
+    const existingImages = images.filter((image) => image.image_id);
+    const newImages = images.filter((image) => !image.image_id);
+
+    existingImages.forEach((file) => {
+      formData.append("existingImages", file.image_id);
+    });
+
+    newImages.forEach((file) => {
       formData.append("images", file);
     });
 
@@ -281,6 +290,7 @@ const AddProduct = () => {
                             className="w-24 h-24 object-cover rounded-lg"
                           />
                           <button
+                          type="button"
                             onClick={() => removeImage(url)}
                             className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
                           >
