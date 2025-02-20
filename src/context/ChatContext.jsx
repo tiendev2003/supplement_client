@@ -58,7 +58,10 @@ export function ChatProvider({ children }) {
 
   const addMessage = useCallback(
     (content, role) => {
-      if (!currentChat) return
+      if (!currentChat) {
+        console.warn("No chat selected. Cannot add message.");
+        return;
+      }
 
       const newMessage = {
         id: Date.now().toString(),

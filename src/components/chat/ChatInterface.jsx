@@ -1,11 +1,10 @@
 "use client";
 
 import { Menu, Plus, Send, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useChat } from "../../context/ChatContext";
+import PropTypes from "prop-types";
+import { useState } from "react";
 
 export function ChatInterface({ onOpenSidebar }) {
-  const { currentChat, addMessage } = useChat();
   const [input, setInput] = useState("");
   const [model, setModel] = useState("gpt-3.5");
   const [isTyping, setIsTyping] = useState(false);
@@ -13,43 +12,29 @@ export function ChatInterface({ onOpenSidebar }) {
   const [showMenu, setShowMenu] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      try {
-        const chatHistory = [
-          { content: "Hello", role: "user" },
-          { content: "Hi there!", role: "assistant" },
-        ];
-        chatHistory.forEach((message) => {
-          addMessage(message.content, message.role);
-        });
-      } catch (error) {
-        console.error("Failed to fetch chat history:", error);
-      }
-    };
-
-    fetchChatHistory();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() && !imagePreview) return;
 
-    if (input.trim()) {
-      addMessage(input, "user");
-    }
-    if (imagePreview) {
-      addMessage("Image uploaded", "user");
-    }
+    const newMessage = {
+      role: "user",
+      content: input || "Image sent",
+      image: imagePreview,
+    };
+
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setInput("");
+    setImagePreview(null);
     setIsTyping(true);
 
     setTimeout(() => {
-      addMessage("This is a simulated response", "assistant");
+      const botReply = {
+        role: "bot",
+        content: "This is a fake reply from the bot.",
+      };
+      setMessages((prevMessages) => [...prevMessages, botReply]);
       setIsTyping(false);
     }, 1000);
-
-    setInput("");
-    setImagePreview(null);
   };
 
   const handlePlusClick = () => setShowMenu(!showMenu);
@@ -69,12 +54,13 @@ export function ChatInterface({ onOpenSidebar }) {
 
   const handleRemoveImage = () => setImagePreview(null);
 
-  const messagesToDisplay = currentChat ? currentChat.messages : messages;
-
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center border-b px-4 h-14">
-        <button onClick={onOpenSidebar} className="p-2 -ml-2 text-gray-500 hover:text-gray-700">
+        <button
+          onClick={onOpenSidebar}
+          className="p-2 -ml-2 text-gray-500 hover:text-gray-700"
+        >
           <Menu className="h-6 w-6" />
         </button>
         <select
@@ -88,23 +74,48 @@ export function ChatInterface({ onOpenSidebar }) {
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        {messagesToDisplay.map((message, index) => (
-          <div key={index} className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}>
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`mb-4 ${
+              message.role === "user" ? "text-right" : "text-left"
+            }`}
+          >
             <div
-              className={`inline-block max-w-[80%] px-4 py-2 rounded-lg ${
-                message.role === "user" ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-900"
+              className={`inline-block max-w-[80%] px-2 py-2 rounded-lg ${
+                message.role === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-900"
               }`}
             >
               {message.content}
+              {message.image && (
+                <img
+                  src={message.image}
+                  alt="User upload"
+                  className="mt-2 max-h-40 rounded-lg"
+                />
+              )}
             </div>
           </div>
         ))}
+        {isTyping && (
+          <div className="text-left mb-4">
+            <div className="inline-block max-w-[80%] px-4 py-2 rounded-lg bg-gray-100 text-gray-900">
+              Bot is typing...
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="border-t p-4">
         {imagePreview && (
           <div className="relative inline-block mb-3">
-            <img src={imagePreview} alt="Preview" className="max-h-40 rounded-lg" />
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="max-h-40 rounded-lg"
+            />
             <button
               type="button"
               onClick={handleRemoveImage}
@@ -126,7 +137,13 @@ export function ChatInterface({ onOpenSidebar }) {
             {showMenu && (
               <div className="absolute bottom-12 left-0 bg-white border rounded-lg shadow-lg w-[200px]">
                 <label className="block p-2 cursor-pointer hover:bg-gray-100 w-full">
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                  />{" "}
+                  {/* Đã thêm dấu đóng */}
                   Cung cấp hình ảnh da mặt của bạn để soi da miễn phí
                 </label>
               </div>
@@ -153,3 +170,7 @@ export function ChatInterface({ onOpenSidebar }) {
     </div>
   );
 }
+
+ChatInterface.propTypes = {
+  onOpenSidebar: PropTypes.func.isRequired,
+};
